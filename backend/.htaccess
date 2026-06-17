@@ -1,0 +1,20 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Security headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"
+
+# Cache control for uploads
+<FilesMatch "\.(jpg|jpeg|png|webp|gif)$">
+  Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+# Block direct PHP file access in uploads
+<FilesMatch "\.php$">
+  Order Deny,Allow
+  Deny from all
+</FilesMatch>

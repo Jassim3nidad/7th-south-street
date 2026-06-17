@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --color-bg: #080808;
+  --color-accent: #C9A96E;
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { background: #080808; color: #F5F2EE; font-family: var(--font-body); font-weight: 300; overflow-x: hidden; }
+::selection { background: #C9A96E; color: #080808; }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #080808; }
+::-webkit-scrollbar-thumb { background: #524A44; border-radius: 2px; }
+
+@layer components {
+  .font-display { font-family: var(--font-display); }
+  .text-label { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; }
+  .btn-primary { @apply inline-flex items-center justify-center px-8 py-3 bg-[#F5F2EE] text-[#080808] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-[#C9A96E]; }
+  .btn-outline { @apply inline-flex items-center justify-center px-8 py-3 border border-white/20 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-[#C9A96E] hover:text-[#C9A96E]; }
+  .btn-ghost { @apply inline-flex items-center justify-center px-6 py-2 text-white/50 text-xs font-medium tracking-widest uppercase transition-colors duration-200 hover:text-white; }
+  .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); }
+  .input-dark { @apply w-full bg-white/[0.04] border border-white/10 px-4 py-3 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#C9A96E]/50 transition-colors duration-200; }
+  .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .ticker-content { display: inline-flex; animation: ticker 25s linear infinite; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+}
