@@ -30,6 +30,7 @@ frontend/                  Next.js application and same-origin route handlers
 supabase/migrations/       Versioned Postgres, RLS, Storage, and RPC migrations
 supabase/seed.sql          Catalog development seed (no Auth users or passwords)
 supabase/tests/database/   Rollback-only pgTAP security tests
+scripts/                    Backup and source/image inventory tooling
 backend/                   Temporary legacy PHP implementation
 database/                  Legacy MySQL schema and seed for migration reference
 docs/                      Deployment and migration runbooks
@@ -82,6 +83,7 @@ npm run dev
 cd frontend
 npm run type-check
 npm run lint
+npm test
 npm run build
 
 cd ..
@@ -89,7 +91,7 @@ npx supabase test db
 npx supabase db lint --local --level warning
 ```
 
-The database tests cover catalog RLS, cross-user order access, non-admin denial, trusted totals, insufficient inventory, invalid variants, duplicate-submission idempotency, exact-once cancellation restocking, admin inventory updates, Storage denial, and the server-only newsletter RPC.
+The tests cover catalog RLS, cross-user order access, non-admin denial, trusted totals, insufficient inventory, invalid variants, duplicate-submission idempotency, exact-once cancellation restocking, public-function privilege boundaries, admin inventory updates, Storage write/delete denial, server-only newsletter access, and upload signatures. `npm run test:hosted-concurrency` is an explicit hosted-only check that creates uniquely named QA rows and removes them in a `finally` block.
 
 ## Administrator setup
 
@@ -107,4 +109,4 @@ Confirm the query inserted exactly one row before attempting `/admin`. Do not re
 
 ## Migration and deployment
 
-See [docs/SUPABASE_MIGRATION.md](docs/SUPABASE_MIGRATION.md) for the endpoint matrix, RLS model, MySQL data migration, verification checklist, and rollback procedure. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Supabase and Vercel deployment.
+See [docs/SUPABASE_MIGRATION.md](docs/SUPABASE_MIGRATION.md) for the endpoint matrix, RLS model, MySQL data migration, verification checklist, and rollback procedure. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Supabase and Vercel deployment. The evidence-based production completion matrix is maintained in [docs/PRODUCTION_CUTOVER.md](docs/PRODUCTION_CUTOVER.md).

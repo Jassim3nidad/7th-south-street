@@ -1,27 +1,13 @@
 import { randomUUID } from 'crypto'
 import { failure, handleRouteError, success } from '@/lib/http'
 import { requireAdmin } from '@/lib/supabase/admin'
+import {
+  allowedImageTypes,
+  hasValidImageSignature,
+  isValidProductImagePath,
+} from '@/lib/upload-validation'
 
 export const runtime = 'nodejs'
-
-const allowedTypes = new Map([
-  ['image/jpeg', 'jpg'],
-  ['image/png', 'png'],
-  ['image/webp', 'webp'],
-])
-
-function hasValidSignature(type: string, bytes: Uint8Array) {
-  if (type === 'image/jpeg') return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
-  if (type === 'image/png') {
-    const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
-    return signature.every((byte, index) => bytes[index] === byte)
-  }
-  if (type === 'image/webp') {
-    return String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) === 'RIFF'
-      && String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) === 'WEBP'
-  }
-  return false
-}
 
 export async function POST(request: Request) {
   let uploadedPath: string | null = null
@@ -34,10 +20,10 @@ export async function POST(request: Request) {
     if (!Number.isInteger(productId) || productId < 1) return failure('A valid product is required')
     if (file.size < 1 || file.size > 5 * 1024 * 1024) return failure('Image must be no larger than 5MB')
 
-    const extension = allowedTypes.get(file.type)
+    const extension = allowedImageTypes.get(file.type)
     if (!extension) return failure('Only JPEG, PNG, and WebP images are allowed')
     const bytes = new Uint8Array(await file.arrayBuffer())
-    if (!hasValidSignature(file.type, bytes)) return failure('Image signature does not match its MIME type')
+    if (!hasValidImageSignature(file.type, bytes)) return failure('Image signature does not match its MIME type')
 
     uploadedPath = `products/${productId}/${randomUUID()}.${extension}`
     const { error: uploadError } = await supabase.storage
@@ -76,7 +62,7 @@ export async function DELETE(request: Request) {
     const { supabase } = await requireAdmin()
     const body = await request.json()
     const path = typeof body?.object_path === 'string' ? body.object_path : ''
-    if (!/^products\/[A-Za-z0-9/_-]+\.(jpg|jpeg|png|webp)$/.test(path)) {
+    if (!isValidProductImagePath(path)) {
       return failure('A valid product image path is required')
     }
     const { error: storageError } = await supabase.storage.from('product-images').remove([path])

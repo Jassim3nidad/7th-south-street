@@ -1,10 +1,50 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select extensions.plan(8);
+select extensions.plan(10);
 
 insert into public.products (id, name, slug, status)
 values (999999, 'Hidden test product', 'hidden-test-product', 'archived');
+
+insert into public.events (
+  id, title, slug, event_date, max_rsvp, status
+) values (
+  999999, 'RSVP boundary test', 'rsvp-boundary-test', now() + interval '7 days', 2, 'upcoming'
+);
+
+insert into storage.objects (bucket_id, name, metadata)
+values ('product-images', 'products/policy-delete-test.png', '{}'::jsonb);
+
+do $$
+declare
+  v_public_definers integer;
+  v_private_definers integer;
+begin
+  select count(*) into v_public_definers
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.proname in ('create_order', 'rsvp_event', 'is_admin')
+    and p.prosecdef;
+
+  select count(*) into v_private_definers
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'private'
+    and p.proname in ('create_order_impl', 'rsvp_event_impl', 'is_current_user_admin')
+    and p.prosecdef;
+
+  if v_public_definers <> 0 or v_private_definers <> 3 then
+    raise exception 'Security-definer boundary is not confined to the private schema';
+  end if;
+  if not has_function_privilege('anon', 'public.create_order(jsonb,jsonb,jsonb,text,text,uuid)', 'EXECUTE')
+     or not has_function_privilege('anon', 'public.rsvp_event(bigint,text,text,text)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.is_admin(uuid)', 'EXECUTE') then
+    raise exception 'Public function execution grants do not match the intended boundary';
+  end if;
+end;
+$$;
+select extensions.pass('security-definer implementations are confined behind narrow public wrappers');
 
 set local role anon;
 
@@ -100,6 +140,26 @@ $$;
 reset role;
 select extensions.pass('checkout rejects invalid variants');
 
+set local role anon;
+do $$
+declare
+  v_first jsonb;
+  v_second jsonb;
+  v_count integer;
+begin
+  v_first := public.rsvp_event(999999, 'Test Attendee', 'rsvp@example.com', null);
+  v_second := public.rsvp_event(999999, 'Test Attendee', 'rsvp@example.com', null);
+  select rsvp_count into v_count from public.events where id = 999999;
+  if (v_first ->> 'created')::boolean is not true
+     or (v_second ->> 'created')::boolean is not false
+     or v_count <> 1 then
+    raise exception 'Public RSVP boundary did not preserve validation and idempotency';
+  end if;
+end;
+$$;
+reset role;
+select extensions.pass('public RSVP remains capacity-checked and idempotent');
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'customer-a@example.com', '{"full_name":"Customer A"}'::jsonb),
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'customer-b@example.com', '{"full_name":"Customer B"}'::jsonb),
@@ -135,6 +195,9 @@ declare
   v_rows integer;
   v_expected_error boolean := false;
 begin
+  if public.is_admin('cccccccc-cccc-4ccc-8ccc-cccccccccccc') then
+    raise exception 'Non-admin inspected another user role through is_admin';
+  end if;
   update public.products set name = 'Unauthorized change' where id = 1;
   get diagnostics v_rows = row_count;
   if v_rows <> 0 then raise exception 'Non-admin product update was allowed'; end if;
@@ -183,6 +246,7 @@ set local role anon;
 do $$
 declare
   v_storage_denied boolean := false;
+  v_delete_denied boolean := false;
   v_newsletter_denied boolean := false;
 begin
   begin
@@ -196,12 +260,33 @@ begin
   exception when insufficient_privilege then
     v_newsletter_denied := true;
   end;
+  begin
+    delete from storage.objects
+    where bucket_id = 'product-images' and name = 'products/policy-delete-test.png';
+  exception when others then
+    if sqlstate = '42501' or sqlerrm like 'Direct deletion from storage tables is not allowed%' then
+      v_delete_denied := true;
+    else
+      raise;
+    end if;
+  end;
   if not v_storage_denied then raise exception 'Anonymous storage upload was allowed'; end if;
   if not v_newsletter_denied then raise exception 'Direct newsletter RPC was allowed'; end if;
+  if not v_delete_denied then raise exception 'Anonymous storage delete was allowed'; end if;
 end;
 $$;
 reset role;
-select extensions.pass('storage writes and newsletter RPC are not public');
+do $$
+begin
+  if not exists (
+    select 1 from storage.objects
+    where bucket_id = 'product-images' and name = 'products/policy-delete-test.png'
+  ) then
+    raise exception 'Storage delete policy test object was unexpectedly removed';
+  end if;
+end;
+$$;
+select extensions.pass('storage writes/deletes and newsletter RPC are not public');
 
 select * from extensions.finish();
 rollback;
