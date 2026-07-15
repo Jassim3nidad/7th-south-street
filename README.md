@@ -1,206 +1,110 @@
-# 7TH SOUTH STREET — Full-Stack E-Commerce Platform
+# 7Th South Street
 
-> Premium underground streetwear brand. Minimalist. Dark. Unapologetic.
+The storefront now uses Next.js route handlers with Supabase Postgres, Auth, and Storage. The former PHP/MySQL backend remains in `backend/` only as a temporary rollback and feature-comparison reference; the Next.js application no longer calls it.
 
----
+## Architecture
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14 (App Router), React, Tailwind CSS, Framer Motion |
-| Backend | PHP 8.2 REST API |
-| Database | MySQL 8.0 |
-| Deployment | Vercel (frontend) + VPS/shared hosting (backend) |
-| CI/CD | GitHub → Vercel auto-deploy |
-| Local Dev | Laragon or Docker |
-
----
-
-## Project Structure
-
-```
-7th-south-street/
-├── frontend/               # Next.js app (deploy to Vercel)
-│   ├── src/
-│   │   ├── app/            # Next.js App Router pages
-│   │   ├── components/     # Reusable React components
-│   │   ├── lib/            # API clients, utilities
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── store/          # Zustand global state
-│   │   └── types/          # TypeScript type definitions
-│   └── public/             # Static assets
-├── backend/                # PHP REST API
-│   ├── api/                # Route handlers
-│   ├── config/             # DB config, constants
-│   ├── middleware/          # Auth, CORS, rate limiting
-│   ├── models/             # Database models
-│   ├── helpers/            # Utility functions
-│   └── uploads/            # Product image storage
-├── database/
-│   ├── schema.sql          # Full DB schema
-│   └── seed.sql            # Sample data
-└── docs/                   # Deployment guides
+```text
+Browser
+  -> Next.js 15 App Router
+     -> Supabase Auth (cookie-based SSR sessions)
+     -> Supabase Postgres (RLS on every exposed table)
+     -> Postgres RPC (transactional checkout and trusted totals)
+     -> Supabase Storage (product-images bucket)
 ```
 
----
+Important security boundaries:
 
-## Quick Start
+- The browser submits only variant IDs and quantities at checkout.
+- `create_order` locks inventory, reads current prices, creates immutable item snapshots, decrements stock, records movements, and handles idempotency in one transaction.
+- Cancelling an order restores its stock exactly once, records cancellation movements, and prevents reopening a cancelled order.
+- Admin pages and route handlers verify a current Supabase user and a database-backed `user_roles` entry.
+- Supabase sessions are cookie-based; admin tokens are not stored in `localStorage`.
+- The service-role key is used only by the server-only newsletter route and must never be exposed through `NEXT_PUBLIC_*`.
+- Product image uploads require an admin session, a permitted MIME type, a matching file signature, a 5 MB maximum, and a `products/` object path.
 
-### Prerequisites
-- Node.js 18+
-- PHP 8.2+
-- MySQL 8.0+
-- Laragon (Windows) OR Docker
+## Repository layout
 
----
-
-### 1. Database Setup
-
-**Using Laragon:**
-1. Start Laragon → Start All
-2. Open HeidiSQL (bundled)
-3. Create database: `7th_south_street`
-4. Run `database/schema.sql`
-5. Run `database/seed.sql`
-
-**Using Docker:**
-```bash
-docker run --name 7ss-mysql \
-  -e MYSQL_ROOT_PASSWORD=root \
-  -e MYSQL_DATABASE=7th_south_street \
-  -p 3306:3306 -d mysql:8.0
-
-mysql -h 127.0.0.1 -u root -proot 7th_south_street < database/schema.sql
-mysql -h 127.0.0.1 -u root -proot 7th_south_street < database/seed.sql
+```text
+frontend/                  Next.js application and same-origin route handlers
+supabase/migrations/       Versioned Postgres, RLS, Storage, and RPC migrations
+supabase/seed.sql          Catalog development seed (no Auth users or passwords)
+supabase/tests/database/   Rollback-only pgTAP security tests
+backend/                   Temporary legacy PHP implementation
+database/                  Legacy MySQL schema and seed for migration reference
+docs/                      Deployment and migration runbooks
 ```
 
----
+## Local development
 
-### 2. Backend Setup
+Prerequisites:
 
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your DB credentials
-```
-
-**With Laragon:** Place `backend/` folder inside `C:/laragon/www/7ss-api/`
-Access at: `http://7ss-api.test`
-
-**With PHP built-in server (dev):**
-```bash
-cd backend
-php -S localhost:8000
-```
-
----
-
-### 3. Frontend Setup
+- Node.js and npm
+- Docker Desktop for the local Supabase stack
+- Supabase CLI (`npx supabase` is supported)
 
 ```bash
 cd frontend
-cp .env.local.example .env.local
-# Set NEXT_PUBLIC_API_URL=http://localhost:8000
-
 npm install
+cp .env.example .env.local
+```
+
+Set these browser-safe values in `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+Set these server-only values when their workflows are used:
+
+```env
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_your_key
+NEWSLETTER_RATE_LIMIT_SALT=a-long-random-value
+```
+
+Never commit `.env.local`.
+
+Start the local Supabase stack and apply all migrations and seed data:
+
+```bash
+cd ..
+npx supabase start
+npx supabase db reset
+cd frontend
 npm run dev
 ```
 
-Open `http://localhost:3000`
+## Validation
 
----
-
-## Deployment
-
-### Frontend → Vercel
-
-1. Push repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → New Project → Import from GitHub
-3. Set **Root Directory** to `frontend`
-4. Add environment variables:
-   ```
-   NEXT_PUBLIC_API_URL=https://your-api-domain.com
-   NEXT_PUBLIC_SITE_URL=https://your-vercel-domain.com
-   ```
-5. Deploy → Every GitHub push auto-deploys ✓
-
-### Backend → Shared Hosting / VPS
-
-**Shared Hosting (cPanel):**
-1. Upload `backend/` to `public_html/api/`
-2. Create MySQL database via cPanel
-3. Import `database/schema.sql`
-4. Update `backend/config/database.php` with credentials
-5. Set `CORS_ORIGIN` to your Vercel URL
-
-**VPS (Ubuntu + Nginx):**
 ```bash
-# Install stack
-sudo apt install nginx php8.2-fpm php8.2-mysql mysql-server
+cd frontend
+npm run type-check
+npm run lint
+npm run build
 
-# Upload backend files to /var/www/7ss-api/
-# Configure Nginx (see docs/nginx.conf)
-sudo systemctl restart nginx php8.2-fpm
+cd ..
+npx supabase test db
+npx supabase db lint --local --level warning
 ```
 
----
+The database tests cover catalog RLS, cross-user order access, non-admin denial, trusted totals, insufficient inventory, invalid variants, duplicate-submission idempotency, exact-once cancellation restocking, admin inventory updates, Storage denial, and the server-only newsletter RPC.
 
-## Environment Variables
+## Administrator setup
 
-### Frontend (`.env.local`)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_INSTAGRAM_TOKEN=your_instagram_token
+No administrator password is stored or seeded. Create a new user in Supabase Auth with a unique password, then assign the role using the user's verified email:
+
+```sql
+insert into public.user_roles (user_id, role)
+select id, 'admin'::public.app_role
+from auth.users
+where lower(email) = lower('owner@example.com')
+on conflict do nothing;
 ```
 
-### Backend (`.env`)
-```env
-DB_HOST=localhost
-DB_NAME=7th_south_street
-DB_USER=root
-DB_PASS=
-JWT_SECRET=your-super-secret-jwt-key-change-this
-CORS_ORIGIN=http://localhost:3000
-UPLOAD_MAX_SIZE=5242880
-```
+Confirm the query inserted exactly one row before attempting `/admin`. Do not reuse the legacy documented password.
 
----
+## Migration and deployment
 
-## Admin Access
-
-Default admin credentials (change after first login!):
-- URL: `/admin`
-- Email: `admin@7thsouthstreet.com`
-- Password: `Admin@7SS2024!`
-
----
-
-## API Documentation
-
-Base URL: `http://localhost:8000/api`
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/login` | Admin login |
-| POST | `/auth/logout` | Logout |
-| GET | `/products` | List all products |
-| GET | `/products/{id}` | Single product |
-| POST | `/products` | Create product (admin) |
-| PUT | `/products/{id}` | Update product (admin) |
-| DELETE | `/products/{id}` | Delete product (admin) |
-| GET | `/categories` | List categories |
-| GET | `/events` | List events |
-| POST | `/events` | Create event (admin) |
-| GET | `/orders` | List orders (admin) |
-| POST | `/orders` | Create order |
-| GET | `/customers` | List customers (admin) |
-| POST | `/newsletter/subscribe` | Subscribe to newsletter |
-| GET | `/dashboard/stats` | Dashboard analytics (admin) |
-
----
-
-## License
-
-Private — 7Th South Street © 2024. All rights reserved.
+See [docs/SUPABASE_MIGRATION.md](docs/SUPABASE_MIGRATION.md) for the endpoint matrix, RLS model, MySQL data migration, verification checklist, and rollback procedure. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Supabase and Vercel deployment.

@@ -34,7 +34,18 @@ export default function ProductPage() {
     const sizeStock = product.inventory?.find((i: any) => i.size === selectedSize)
     if (sizeStock && sizeStock.stock_quantity === 0) { toast.error('Out of stock in this size'); return }
     const primaryImg = product.images?.find((i: any) => i.is_primary)?.image_url || product.images?.[0]?.image_url || ''
-    addItem({ id: product.id, name: product.name, price: product.price, size: selectedSize || 'OS', image: primaryImg, quantity: 1, sku: product.sku })
+    const selectedVariant = sizeStock || product.inventory?.[0]
+    if (!selectedVariant?.variant_id) { toast.error('This product is not available'); return }
+    addItem({
+      id: product.id,
+      variant_id: selectedVariant.variant_id,
+      name: product.name,
+      price: selectedVariant.price,
+      size: selectedVariant.size || selectedSize || 'OS',
+      image: primaryImg,
+      quantity: 1,
+      sku: selectedVariant.sku,
+    })
     toast.success('Added to cart')
     toggleCart()
   }

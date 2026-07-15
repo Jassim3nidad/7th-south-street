@@ -1,6 +1,4 @@
-// API client for PHP backend
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+// Same-origin API client backed by Next.js route handlers and Supabase.
 
 type FetchOptions = {
   method?: string
@@ -12,13 +10,13 @@ async function apiFetch<T>(endpoint: string, opts: FetchOptions = {}): Promise<T
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
-  if (opts.token) headers['Authorization'] = `Bearer ${opts.token}`
 
-  const res = await fetch(`${API_URL}/api${endpoint}`, {
+  const res = await fetch(`/api${endpoint}`, {
     method: opts.method || 'GET',
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
     cache: 'no-store',
+    credentials: 'same-origin',
   })
 
   const data = await res.json()
@@ -80,6 +78,7 @@ export const authApi = {
   login: (email: string, password: string) =>
     apiFetch<any>('/auth/login', { method: 'POST', body: { email, password } }),
   me: (token: string) => apiFetch<any>('/auth/me', { token }),
+  logout: () => apiFetch<any>('/auth/logout', { method: 'POST' }),
 }
 
 // ── Dashboard ────────────────────────────────────────────────

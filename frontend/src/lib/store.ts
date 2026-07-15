@@ -92,42 +92,6 @@ export const useCartStore = create<CartStore>()(
 )
 
 // ── Auth Store ────────────────────────────────
-interface AuthStore {
-  token: string | null
-  user: any | null
-  isAdmin: boolean
-  setAuth: (token: string, user: any) => void
-  clearAuth: () => void
-}
-
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set) => ({
-      token: null,
-      user: null,
-      isAdmin: false,
-
-      setAuth: (token, user) => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('7ss_token', token)
-        }
-        set({ token, user, isAdmin: user?.role === 'admin' })
-      },
-
-      clearAuth: () => {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('7ss_token')
-        }
-        set({ token: null, user: null, isAdmin: false })
-      },
-    }),
-    {
-      name: '7ss-auth',
-      partialize: (state) => ({ token: state.token, user: state.user, isAdmin: state.isAdmin }),
-    }
-  )
-)
-
 // ── Wishlist Store ────────────────────────────
 interface WishlistStore {
   items: number[]

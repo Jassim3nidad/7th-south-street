@@ -11,8 +11,7 @@ export default function Footer() {
     if (!email || status === 'loading') return
     setStatus('loading')
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      await fetch(`${apiUrl}/api/newsletter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+      await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
       setStatus('done')
       setEmail('')
     } catch { setStatus('idle') }

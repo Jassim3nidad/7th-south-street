@@ -208,8 +208,7 @@ CREATE TABLE `wishlists` (
 -- SEED DATA
 -- ============================================
 
-INSERT INTO `admins` (`name`, `email`, `password_hash`, `role`) VALUES
-('7SS Admin', 'admin@7thsouthstreet.com', '$2y$12$ExampleHashedPassword', 'superadmin');
+-- Administrators are intentionally not seeded. Create a unique account out of band.
 
 INSERT INTO `categories` (`name`, `slug`, `sort_order`) VALUES
 ('Snapbacks', 'snapbacks', 1),

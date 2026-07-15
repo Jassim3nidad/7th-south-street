@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type Admin = { id: number; name: string; email: string; role: string }
+type Admin = { id: string; name: string; email: string; role: string }
 
 type AdminStore = {
   admin: Admin | null
@@ -11,26 +11,14 @@ type AdminStore = {
 }
 
 export const useAdmin = create<AdminStore>((set, get) => ({
-  admin:
-    typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('7ss_admin') || 'null')
-      : null,
-  token:
-    typeof window !== 'undefined' ? localStorage.getItem('7ss_token') : null,
+  admin: null,
+  token: null,
 
   setAuth: (admin, token) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('7ss_admin', JSON.stringify(admin))
-      localStorage.setItem('7ss_token', token)
-    }
     set({ admin, token })
   },
 
   logout: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('7ss_admin')
-      localStorage.removeItem('7ss_token')
-    }
     set({ admin: null, token: null })
   },
 

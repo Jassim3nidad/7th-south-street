@@ -26,6 +26,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: { default: '7Th South Street', template: '%s | 7Th South Street' },
   description: 'Premium underground streetwear. Minimalist. Dark. Unapologetic.',
   keywords: ['streetwear', 'fashion', 'caps', 'hoodies', 'Philippines', '7SS'],

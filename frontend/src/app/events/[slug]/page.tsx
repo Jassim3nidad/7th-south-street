@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import CartDrawer from '@/components/layout/CartDrawer'
@@ -86,7 +87,7 @@ export default function EventDetailPage() {
       <div className="pt-28 max-w-5xl mx-auto px-6 lg:px-12 py-16">
         {/* Breadcrumb */}
         <p className="text-white/20 text-xs tracking-widest uppercase mb-8">
-          <a href="/events" className="hover:text-white/40 transition-colors">Events</a>
+          <Link href="/events" className="hover:text-white/40 transition-colors">Events</Link>
           <span className="mx-2">/</span>
           <span>{event.title}</span>
         </p>

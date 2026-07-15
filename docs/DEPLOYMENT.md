@@ -1,206 +1,148 @@
-# 7TH SOUTH STREET — Deployment Guide
+# Deployment guide
 
----
+## Deployment status boundary
 
-## Frontend → Vercel (Recommended)
+The Supabase database migrations and development seed can be deployed independently from the Next.js frontend. A database migration succeeding does not mean Vercel is configured or the production site is live.
 
-### Step 1: Push to GitHub
+## Supabase
+
+### Link and inspect
+
 ```bash
-cd 7th-south-street
-git init
-git add .
-git commit -m "Initial commit: 7SS full-stack e-commerce"
-git remote add origin https://github.com/YOUR_USERNAME/7th-south-street.git
-git push -u origin main
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase migration list --linked
+npx supabase db push --dry-run
 ```
 
-### Step 2: Deploy to Vercel
-1. Go to https://vercel.com → **New Project**
-2. Import your GitHub repository
-3. Set **Root Directory** to `frontend`
-4. Add Environment Variables:
-   ```
-   NEXT_PUBLIC_API_URL = https://api.yourdomain.com
-   NEXT_PUBLIC_SITE_URL = https://yourdomain.vercel.app
-   ```
-5. Click **Deploy**
+Inspect the dry-run and confirm the linked project name before applying anything.
 
-> Every push to `main` will auto-deploy via GitHub → Vercel CI/CD.
+### Apply migrations
 
-### Step 3: Custom Domain (optional)
-- In Vercel dashboard → Domains → Add `shop.7thsouthstreet.com`
-
----
-
-## Backend → Shared Hosting (cPanel)
-
-### Step 1: Upload files
-- Compress `backend/` folder
-- Upload via **cPanel File Manager** to `public_html/api/`
-- Extract
-
-### Step 2: MySQL Database
-1. cPanel → MySQL Databases
-2. Create DB: `username_7ss`
-3. Create DB user + assign all privileges
-4. Import via phpMyAdmin:
-   - Select database → Import tab
-   - Upload `database/schema.sql` → Execute
-   - Upload `database/seed.sql` → Execute
-
-### Step 3: Configure environment
-Edit `backend/config/database.php` directly with your credentials:
-```php
-$host   = 'localhost';
-$dbname = 'username_7ss';
-$user   = 'username_dbuser';
-$pass   = 'your_db_password';
+```bash
+npx supabase db push
 ```
 
-Or create `backend/.env`:
+Use `--include-seed` only for a new development environment. Do not seed a production project that already contains migrated catalog data.
+
+### Generate application types
+
+```bash
+npx supabase gen types typescript --linked > frontend/src/types/database.ts
+```
+
+Review and commit the generated change whenever the database schema changes.
+
+### Database checks
+
+```bash
+npx supabase db lint --linked --level warning
+npx supabase db advisors --linked --type security
+npx supabase db advisors --linked --type performance
+```
+
+Anonymous checkout and RSVP are intentional security-definer entry points. Treat any new or expanded warning as a release blocker until it is reviewed.
+
+## Vercel
+
+Configure the project root as `frontend`.
+
+Required browser-safe variables:
+
 ```env
-DB_HOST=localhost
-DB_NAME=username_7ss
-DB_USER=username_dbuser
-DB_PASS=your_secure_password
-JWT_SECRET=generate-a-long-random-string-here
-CORS_ORIGIN=https://your-vercel-domain.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+NEXT_PUBLIC_SITE_URL=https://www.example.com
 ```
 
-### Step 4: Verify
-Visit: `https://yourdomain.com/api/products`
-Should return JSON with products list.
+Required server-only variables:
 
----
-
-## Backend → VPS (Ubuntu + Nginx)
-
-```bash
-# Install stack
-sudo apt update
-sudo apt install -y nginx php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-fileinfo mysql-server
-
-# Secure MySQL
-sudo mysql_secure_installation
-
-# Create DB
-sudo mysql -u root -p
-CREATE DATABASE 7th_south_street CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER '7ss_user'@'localhost' IDENTIFIED BY 'SecurePassword123!';
-GRANT ALL PRIVILEGES ON 7th_south_street.* TO '7ss_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-
-# Import schema
-mysql -u 7ss_user -p 7th_south_street < /path/to/database/schema.sql
-mysql -u 7ss_user -p 7th_south_street < /path/to/database/seed.sql
-
-# Upload backend files
-sudo mkdir -p /var/www/7ss-api
-sudo cp -r backend/* /var/www/7ss-api/
-sudo chown -R www-data:www-data /var/www/7ss-api
-sudo chmod -R 755 /var/www/7ss-api
-sudo chmod -R 775 /var/www/7ss-api/uploads
-
-# Copy Nginx config
-sudo cp docs/nginx.conf /etc/nginx/sites-available/7ss-api
-sudo ln -s /etc/nginx/sites-available/7ss-api /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# Add SSL with Certbot
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d api.yourdomain.com
+```env
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
+NEWSLETTER_RATE_LIMIT_SALT=a-long-random-value
 ```
 
----
+Optional migration/operations variable (never required by the browser application):
 
-## Laragon (Local Development)
+```env
+SUPABASE_DB_URL=postgresql://...
+```
 
-### Step 1: Setup
-1. Download Laragon from https://laragon.org
-2. Install and start (Start All)
-3. Place `backend/` in `C:/laragon/www/7ss-api/`
-4. Laragon auto-creates: `http://7ss-api.test`
+Rules:
 
-### Step 2: Database
-1. Open HeidiSQL (bundled with Laragon)
-2. Connect with root/empty password
-3. Create database `7th_south_street`
-4. Run `schema.sql` then `seed.sql`
+- Never prefix the service-role key or database URL with `NEXT_PUBLIC_`.
+- Never paste privileged values into client code, screenshots, logs, issues, or build output.
+- Scope Vercel secrets to the required environments.
+- Rotate a secret immediately if it is exposed.
+- Remove the legacy `NEXT_PUBLIC_API_URL` after the Supabase release is accepted.
 
-### Step 3: Frontend
+## Auth URL configuration
+
+In Supabase Auth URL configuration:
+
+- Set the Site URL to the production `NEXT_PUBLIC_SITE_URL`.
+- Add local and preview callback URLs that end in `/auth/callback`.
+- Do not use wildcard redirect patterns broader than required for approved preview domains.
+
+## Create the first administrator
+
+Create the user in Supabase Auth; do not insert a password or Auth user through a migration. Then assign the database role:
+
+```sql
+insert into public.user_roles (user_id, role)
+select id, 'admin'::public.app_role
+from auth.users
+where lower(email) = lower('owner@example.com')
+on conflict do nothing;
+```
+
+Verify that exactly one user matched. Sign in at `/admin`, test one read and one harmless write, sign out, and confirm a non-admin receives a denial.
+
+## Storage
+
+The `product-images` bucket is created by migration with:
+
+- Public object delivery.
+- A 5 MB limit.
+- JPEG, PNG, and WebP MIME allowlist.
+- Admin-only metadata and write policies under `products/`.
+
+The Next.js upload route verifies file signatures and uses generated object names. Do not upload through a service-role browser client.
+
+## Pre-release gate
+
 ```bash
 cd frontend
-npm install
-cp .env.local.example .env.local
-# Set NEXT_PUBLIC_API_URL=http://7ss-api.test
-npm run dev
-```
-Open: http://localhost:3000
+npm ci
+npm run type-check
+npm run lint
+npm run build
 
----
-
-## Docker (Alternative Local Dev)
-
-```bash
-# docker-compose.yml is in project root
-docker-compose up -d
-
-# This starts:
-# - MySQL on port 3306
-# - PHP + backend on port 8000
-# - Next.js frontend on port 3000
+cd ..
+npx supabase test db
+npx supabase db lint --linked --level warning
 ```
 
----
+Then verify in the deployment environment:
 
-## Environment Variables Reference
+- Public category, product, product-detail, and event pages.
+- Hidden/archived product denial.
+- Admin login, session refresh, logout, and non-admin denial.
+- Admin product, event, order, customer, inventory, and dashboard paths.
+- Checkout price tampering, insufficient stock, invalid variants, and duplicate submission.
+- Cross-user order denial.
+- Authorized and unauthorized Storage uploads/deletes.
+- Newsletter invalid input, duplicate submission, and rate limiting.
+- No privileged values appear in browser bundles or logs.
 
-### Frontend (.env.local)
-| Variable | Example | Description |
-|----------|---------|-------------|
-| NEXT_PUBLIC_API_URL | http://localhost:8000 | Backend API base URL |
-| NEXT_PUBLIC_SITE_URL | http://localhost:3000 | Frontend URL |
+## Cutover and rollback
 
-### Backend (.env)
-| Variable | Example | Description |
-|----------|---------|-------------|
-| DB_HOST | localhost | MySQL host |
-| DB_NAME | 7th_south_street | Database name |
-| DB_USER | root | MySQL user |
-| DB_PASS | (empty for Laragon) | MySQL password |
-| JWT_SECRET | (long random string) | JWT signing secret |
-| JWT_EXPIRY | 86400 | Token lifetime in seconds |
-| CORS_ORIGIN | http://localhost:3000 | Allowed frontend origin |
-| UPLOAD_MAX_SIZE | 5242880 | Max image upload size (5MB) |
+Keep the PHP backend available but read-only during the acceptance window. If rollback is required:
 
----
+1. Stop new writes on the failing release.
+2. Redeploy the previous frontend commit.
+3. Reconcile orders created in Supabase during the cutover window.
+4. Restore database state only from a verified backup/PITR point.
+5. Do not delete Storage objects or Supabase rows until reconciliation is signed off.
 
-## Post-Deployment Checklist
-
-- [ ] Admin password changed from default
-- [ ] JWT_SECRET set to unique random string
-- [ ] CORS_ORIGIN set to your Vercel URL
-- [ ] Database seeded with initial data
-- [ ] Uploads folder writable (chmod 775)
-- [ ] HTTPS configured (SSL certificate)
-- [ ] Test product listing: GET /api/products
-- [ ] Test admin login: POST /api/auth/login
-- [ ] Test order creation end-to-end
-- [ ] Mobile responsiveness verified
-- [ ] Vercel auto-deploy triggered by push confirmed
-
----
-
-## Generating a Secure JWT Secret
-
-```bash
-# Node.js
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-
-# PHP
-php -r "echo bin2hex(random_bytes(64));"
-
-# OpenSSL
-openssl rand -hex 64
-```
+The full MySQL migration and reconciliation procedure is in [SUPABASE_MIGRATION.md](SUPABASE_MIGRATION.md).

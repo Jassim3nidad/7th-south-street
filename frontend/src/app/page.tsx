@@ -84,9 +84,7 @@ export default function HomePage() {
   const [products, setProducts] = useState(SAMPLE_PRODUCTS)
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!apiUrl) return
-    fetch(`${apiUrl}/api/products?featured=1&per_page=4`)
+    fetch('/api/products?featured=1&per_page=4')
       .then(r => r.json())
       .then(r => { if (r.data?.length) setProducts(r.data) })
       .catch(() => {}) // silently fall back to sample data
@@ -232,8 +230,7 @@ export default function HomePage() {
                 e.preventDefault()
                 const input = (e.target as HTMLFormElement).querySelector('input') as HTMLInputElement
                 try {
-                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-                  await fetch(`${apiUrl}/api/newsletter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: input.value }) })
+                  await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: input.value }) })
                   const toast = (await import('react-hot-toast')).default
                   toast.success("You're in.")
                   input.value = ''

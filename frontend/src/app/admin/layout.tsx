@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAdmin } from '@/store/admin'
+import { authApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 const navItems = [
@@ -15,22 +16,30 @@ const navItems = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { admin, token, logout, isAuthenticated } = useAdmin()
+  const { admin, logout, isAuthenticated, setAuth } = useAdmin()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (pathname !== '/admin' && !isAuthenticated()) {
-      router.push('/admin')
-    }
-  }, [pathname, isAuthenticated])
+    if (pathname === '/admin' || isAuthenticated()) return
+    authApi.me('cookie-session')
+      .then((response: any) => setAuth(response.data, 'cookie-session'))
+      .catch(() => {
+        logout()
+        router.push('/admin')
+      })
+  }, [pathname, isAuthenticated, logout, router, setAuth])
 
   if (pathname === '/admin') return <>{children}</>
 
-  const handleLogout = () => {
-    logout()
-    toast.success('Logged out')
-    router.push('/admin')
+  const handleLogout = async () => {
+    try {
+      await authApi.logout()
+    } finally {
+      logout()
+      toast.success('Logged out')
+      router.push('/admin')
+    }
   }
 
   return (

@@ -6,11 +6,9 @@
 USE `7th_south_street`;
 
 -- ============================================================
--- DEFAULT ADMIN (password: Admin@7SS2024!)
+-- ADMINISTRATORS
 -- ============================================================
-INSERT INTO `admins` (`name`, `email`, `password_hash`, `role`) VALUES
-('7SS Admin', 'admin@7thsouthstreet.com', '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin');
--- NOTE: Hash above is bcrypt of 'Admin@7SS2024!' — regenerate for production!
+-- Administrators are intentionally not seeded. Create a unique account out of band.
 
 -- ============================================================
 -- CATEGORIES

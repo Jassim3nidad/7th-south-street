@@ -17,6 +17,7 @@ export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [idempotencyKey] = useState(() => crypto.randomUUID())
   const [form, setForm] = useState({ first_name:'', last_name:'', email:'', phone:'', address:'', city:'', province:'', postal:'', payment_method:'cod', notes:'' })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -28,8 +29,11 @@ export default function CheckoutPage() {
     if (items.length === 0) { toast.error('Your cart is empty'); return }
     setLoading(true)
     try {
-      const orderItems = items.map(item => ({ product_id: item.id, product_name: item.name, sku: item.sku, size: item.size, unit_price: item.price, quantity: item.quantity }))
+      const orderItems = items.map(item => ({ variant_id: item.variant_id, quantity: item.quantity }))
       const res: any = await ordersApi.create({
+        idempotency_key: idempotencyKey,
+        first_name: form.first_name,
+        last_name: form.last_name,
         shipping_name: `${form.first_name} ${form.last_name}`,
         shipping_email: form.email,
         shipping_phone: form.phone,
@@ -39,7 +43,6 @@ export default function CheckoutPage() {
         shipping_postal: form.postal,
         payment_method: form.payment_method,
         notes: form.notes,
-        shipping_fee: SHIPPING_FEE,
         items: orderItems,
       })
       clearCart()

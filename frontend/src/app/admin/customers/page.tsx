@@ -10,9 +10,10 @@ export default function AdminCustomersPage() {
 
   useEffect(() => {
     if (!token) return
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/customers`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then((r: any) => setCustomers(r.data || [])).finally(() => setLoading(false))
+    fetch('/api/customers', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then((r: any) => setCustomers(r.data || []))
+      .finally(() => setLoading(false))
   }, [token])
 
   return (
