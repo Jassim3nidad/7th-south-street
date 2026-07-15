@@ -114,6 +114,8 @@ The Next.js upload route verifies file signatures and uses generated object name
 ```bash
 cd frontend
 npm ci
+npm audit
+npm test
 npm run type-check
 npm run lint
 npm run build
@@ -121,7 +123,11 @@ npm run build
 cd ..
 npx supabase test db
 npx supabase db lint --linked --level warning
+npx supabase db advisors --linked --type security
+npx supabase db advisors --linked --type performance
 ```
+
+When testing against a disposable or explicitly approved hosted project, run `npm run test:hosted-concurrency` from `frontend/`. It proves that two simultaneous purchases of the last unit produce exactly one order and one stock movement, then removes its uniquely named QA data.
 
 Then verify in the deployment environment:
 
