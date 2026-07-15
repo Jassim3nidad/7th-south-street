@@ -6,10 +6,10 @@ services:
     container_name: 7ss-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: 7th_south_street
-      MYSQL_USER: 7ss_user
-      MYSQL_PASSWORD: 7ss_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the root .env file}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-7th_south_street}
+      MYSQL_USER: ${MYSQL_USER:-7ss_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the root .env file}
     ports:
       - "3306:3306"
     volumes:
@@ -33,11 +33,11 @@ services:
       - ./backend/uploads:/var/www/html/uploads
     environment:
       DB_HOST: mysql
-      DB_NAME: 7th_south_street
-      DB_USER: 7ss_user
-      DB_PASS: 7ss_password
-      JWT_SECRET: dev-secret-change-in-production
-      CORS_ORIGIN: http://localhost:3000
+      DB_NAME: ${MYSQL_DATABASE:-7th_south_street}
+      DB_USER: ${MYSQL_USER:-7ss_user}
+      DB_PASS: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the root .env file}
+      JWT_SECRET: ${LEGACY_JWT_SECRET:?Set LEGACY_JWT_SECRET in the root .env file}
+      CORS_ORIGIN: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
     depends_on:
       mysql:
         condition: service_healthy
@@ -61,11 +61,13 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL in the root .env file}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in the root .env file}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Set SUPABASE_SERVICE_ROLE_KEY in the root .env file}
+      NEWSLETTER_RATE_LIMIT_SALT: ${NEWSLETTER_RATE_LIMIT_SALT:?Set NEWSLETTER_RATE_LIMIT_SALT in the root .env file}
     command: sh -c "npm install && npm run dev"
-    depends_on:
-      - backend
+    depends_on: []
 
 volumes:
   mysql_data:
