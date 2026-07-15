@@ -79,7 +79,9 @@ Bucket: `product-images`
 
 ## Production MySQL data migration
 
-The source database was not available in this workspace. Perform this procedure during a scheduled migration window and record all outputs.
+The local MySQL service is present, but its configured application login does not authenticate. Do not reset grants or use `skip-grant-tables` without a verified backup. Perform this procedure during a scheduled migration window once a valid source login is available and record all outputs.
+
+Run `scripts/backup-and-analyze-mysql.ps1` only after the source credentials have been verified. It creates full and data-only dumps outside Git, hashes both artifacts, records exact source row counts, and produces anomaly counts without writing database credentials to the report. Run `scripts/inventory-legacy-images.ps1` against every confirmed upload root to produce a signature-checked, SHA-256 image manifest before uploading objects.
 
 ### 1. Freeze and back up
 
@@ -192,6 +194,8 @@ The old documented administrator password is considered exposed and is not prese
 ```bash
 cd frontend
 npm ci
+npm audit
+npm test
 npm run type-check
 npm run lint
 npm run build
@@ -205,7 +209,7 @@ npx supabase db advisors --linked --type security
 npx supabase db advisors --linked --type performance
 ```
 
-The public checkout and RSVP functions are intentionally `SECURITY DEFINER` because anonymous users cannot insert their underlying tables. Each has a fixed `search_path`, fully qualified objects, narrow execute grants, strict input validation, and regression tests. Review intentional advisor warnings rather than suppressing them.
+The public `create_order`, `rsvp_event`, and `is_admin` functions are `SECURITY INVOKER` boundaries. Their privileged implementations live in the non-exposed `private` schema. This keeps the required guest workflows callable without exposing `SECURITY DEFINER` functions through the public Data API. The pgTAP suite asserts this layout, validation behavior, and exact execution grants.
 
 ## Rollback
 
