@@ -37,3 +37,6 @@ Thumbs.db
 
 # MySQL
 *.sql.gz
+*.dump
+.backups/
+migration-artifacts/
