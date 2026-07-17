@@ -1,8 +1,9 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAdmin } from '@/store/admin'
 import { ordersApi } from '@/lib/api'
 import toast from 'react-hot-toast'
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
 const statusColors: Record<string, string> = { pending:'text-yellow-400', confirmed:'text-blue-400', processing:'text-purple-400', shipped:'text-cyan-400', delivered:'text-green-400', cancelled:'text-red-400', refunded:'text-orange-400' }
@@ -13,6 +14,9 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
   const [selected, setSelected] = useState<any>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useDismissibleLayer(Boolean(selected), () => setSelected(null), modalRef)
 
   const load = useCallback(() => {
     if (!token) return
@@ -88,13 +92,13 @@ export default function AdminOrdersPage() {
       {/* Order detail modal */}
       {selected && (
         <div className="theme-backdrop fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelected(null)}>
-          <div className="neo-modal w-full max-w-md p-8 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Order ${selected.order_number}`}>
+          <div ref={modalRef} className="neo-modal w-full max-w-md p-8 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Order ${selected.order_number}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
                 <p className="text-[#C9A96E] text-xs font-mono">{selected.order_number}</p>
                 <p className={`text-xs capitalize mt-1 ${statusColors[selected.status] || 'text-white/30'}`}>{selected.status}</p>
               </div>
-              <button onClick={() => setSelected(null)} className="text-white/30 hover:text-white" aria-label="Close order details">
+              <button onClick={() => setSelected(null)} className="modal-close-button text-white/30 hover:text-white" aria-label="Close order details">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
