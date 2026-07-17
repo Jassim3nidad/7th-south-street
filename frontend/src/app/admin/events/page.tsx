@@ -77,7 +77,7 @@ export default function AdminEventsPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-slate-900/35 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="theme-backdrop fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4">
           <motion.div initial={false} animate={{ opacity:1, scale:1 }}
             className="neo-modal w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={editing ? 'Edit event' : 'New event'}>
             <div className="flex justify-between items-center mb-8">
