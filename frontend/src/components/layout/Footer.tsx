@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 
 const navigation = [
   { href: '/shop', label: 'Shop All' },
@@ -81,7 +82,10 @@ export default function Footer() {
 
         <div className="site-footer__bottom">
           <p>© 2024 7Th South Street. All rights reserved.</p>
-          <Link href="/admin">Admin</Link>
+          <div className="site-footer__preferences">
+            <ThemeToggle />
+            <Link href="/admin">Admin</Link>
+          </div>
         </div>
       </div>
     </footer>
