@@ -6,6 +6,7 @@ import { authApi } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
@@ -35,6 +36,9 @@ export default function AdminLoginPage() {
 
   return (
     <main className="site-shell admin-login flex items-center justify-center px-4">
+      <div className="admin-login__theme" aria-label="Appearance settings">
+        <ThemeToggle />
+      </div>
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="neo-panel w-full max-w-md">
 
