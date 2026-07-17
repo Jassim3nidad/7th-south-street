@@ -57,8 +57,8 @@ export default function AdminInventoryPage() {
           const hasOut = variants.some((v: any) => v.stock_quantity === 0)
           return (
             <div key={productName} className={`admin-card p-6 ${hasOut ? 'border-red-900/30' : hasLow ? 'border-yellow-900/30' : ''}`}>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
+              <div className="inventory-card__header flex items-center justify-between mb-5">
+                <div className="inventory-card__identity flex items-center gap-3">
                   <p className="text-white/80 text-sm font-medium">{productName}</p>
                   {hasOut && <span className="px-2 py-0.5 text-[9px] tracking-widest uppercase border border-red-500/30 text-red-400">Out of Stock</span>}
                   {!hasOut && hasLow && <span className="px-2 py-0.5 text-[9px] tracking-widest uppercase border border-yellow-500/30 text-yellow-400">Low Stock</span>}
@@ -80,11 +80,11 @@ export default function AdminInventoryPage() {
                           min="0"
                           value={editing[v.id] !== undefined ? editing[v.id] : v.stock_quantity}
                           onChange={e => setEditing(prev => ({ ...prev, [v.id]: e.target.value }))}
-                          className={`w-14 bg-transparent border px-2 py-1 text-sm text-center focus:outline-none transition-colors ${editing[v.id] !== undefined ? 'border-[#C9A96E]/40 text-white' : 'border-white/10 text-white/60'}`}
+                          className={`inventory-stock-input w-14 bg-transparent border px-2 py-1 text-sm text-center focus:outline-none transition-colors ${editing[v.id] !== undefined ? 'border-[#C9A96E]/40 text-white' : 'border-white/10 text-white/60'}`}
                         />
                         {editing[v.id] !== undefined && (
                           <button onClick={() => saveStock(v.id)}
-                            className="w-6 h-6 flex items-center justify-center border border-[#C9A96E]/30 text-[#C9A96E] hover:bg-[#C9A96E]/10 transition-colors" aria-label={`Save stock for size ${v.size || 'OS'}`}>
+                            className="inventory-save-button flex items-center justify-center border border-[#C9A96E]/30 text-[#C9A96E] hover:bg-[#C9A96E]/10 transition-colors" aria-label={`Save stock for size ${v.size || 'OS'}`}>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
