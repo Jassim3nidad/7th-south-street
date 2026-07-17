@@ -18,11 +18,11 @@ export default function AdminCustomersPage() {
 
   return (
     <div className="p-8 lg:p-10">
-      <div className="mb-10">
-        <p className="text-[#C9A96E] text-[10px] tracking-[0.4em] uppercase mb-2">Manage</p>
-        <h1 className="text-white text-3xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Customers</h1>
+      <div className="admin-page-header">
+        <div><p className="neo-kicker mb-2">Manage</p>
+        <h1 className="admin-page-title">Customers</h1></div>
       </div>
-      <div className="border border-white/[0.06] overflow-x-auto">
+      <div className="neo-table-shell overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.06]">
