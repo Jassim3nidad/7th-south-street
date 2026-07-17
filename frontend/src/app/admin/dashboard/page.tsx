@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAdmin } from '@/store/admin'
 import { dashboardApi } from '@/lib/api'
 
@@ -75,10 +75,10 @@ export default function DashboardPage() {
           {salesByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={salesByMonth} barSize={20}>
-                <XAxis dataKey="month" tick={{ fill: '#758197', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#758197', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(66,86,124,0.06)' }} />
-                <Bar dataKey="revenue" fill="#3c55ee" opacity={0.88} name="revenue" radius={[8, 8, 2, 2]} />
+                <XAxis dataKey="month" tick={{ fill: 'var(--neo-text-soft)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--neo-text-soft)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--neo-hover)' }} />
+                <Bar dataKey="revenue" fill="var(--neo-accent-strong)" opacity={0.88} name="revenue" radius={[8, 8, 2, 2]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
