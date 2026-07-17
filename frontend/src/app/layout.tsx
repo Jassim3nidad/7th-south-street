@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
+import { ThemeProvider } from '@/components/theme/ThemeProvider'
+import { getThemeInitScript, themeMetaColors } from '@/lib/theme'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -43,29 +45,36 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        <meta name="theme-color" content={themeMetaColors.light} />
+        <script id="theme-init" dangerouslySetInnerHTML={{ __html: getThemeInitScript() }} />
+      </head>
       <body
         className="antialiased"
         style={{ fontFamily: 'var(--font-body), DM Sans, system-ui, sans-serif' }}
       >
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: 'var(--neo-surface-strong)',
-              color: 'var(--neo-text)',
-              border: '1px solid rgba(255,255,255,0.82)',
-              borderRadius: '16px',
-              boxShadow: 'var(--neo-shadow-raised-sm)',
-              fontFamily: 'var(--font-body), sans-serif',
-              fontSize: '13px',
-              letterSpacing: '0.02em',
-            },
-            success: { iconTheme: { primary: '#2474f5', secondary: '#ffffff' } },
-            error: { iconTheme: { primary: '#bf3e50', secondary: '#ffffff' } },
-          }}
-        />
+        <ThemeProvider>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: 'var(--neo-surface-strong)',
+                color: 'var(--neo-text)',
+                border: '1px solid var(--neo-border)',
+                borderRadius: '16px',
+                boxShadow: 'var(--neo-shadow-raised-sm)',
+                fontFamily: 'var(--font-body), sans-serif',
+                fontSize: '13px',
+                letterSpacing: '0.02em',
+              },
+              success: { iconTheme: { primary: 'var(--neo-accent)', secondary: 'var(--neo-surface-strong)' } },
+              error: { iconTheme: { primary: 'var(--neo-error)', secondary: 'var(--neo-surface-strong)' } },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   )
