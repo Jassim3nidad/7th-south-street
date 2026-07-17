@@ -43,30 +43,30 @@ function ShopContent() {
   }
 
   return (
-    <main className="bg-[#080808] min-h-screen">
+    <main className="site-shell">
       <Navbar />
       <CartDrawer />
 
       {/* Header */}
-      <div className="pt-32 pb-12 px-6 lg:px-12 max-w-7xl mx-auto border-b border-white/[0.06]">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="text-[#C9A96E] text-xs tracking-[0.4em] uppercase mb-3">Store</p>
-          <h1 className="text-white font-light" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 6vw, 80px)', letterSpacing: '-0.02em' }}>
+      <div className="page-header site-container neo-surface-sm">
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <p className="neo-kicker">Store</p>
+          <h1 className="neo-heading">
             All Products
           </h1>
         </motion.div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10">
+      <div className="site-container page-content">
         {/* Filters */}
         <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2">
           <button onClick={() => setFilter('')}
-            className={`flex-shrink-0 px-5 py-2 text-xs tracking-widest uppercase border transition-all duration-200 ${!category ? 'border-white/40 text-white' : 'border-white/10 text-white/40 hover:border-white/20 hover:text-white/60'}`}>
+            className={`filter-chip ${!category ? 'is-active' : ''}`}>
             All
           </button>
           {categories.map((cat: any) => (
             <button key={cat.id} onClick={() => setFilter(cat.slug)}
-              className={`flex-shrink-0 px-5 py-2 text-xs tracking-widest uppercase border transition-all duration-200 ${category === cat.slug ? 'border-white/40 text-white' : 'border-white/10 text-white/40 hover:border-white/20 hover:text-white/60'}`}>
+              className={`filter-chip ${category === cat.slug ? 'is-active' : ''}`}>
               {cat.name}
             </button>
           ))}
@@ -74,7 +74,9 @@ function ShopContent() {
 
         {/* Search */}
         <div className="mb-10 max-w-sm">
+          <label htmlFor="product-search" className="sr-only">Search products</label>
           <input
+            id="product-search"
             type="text"
             defaultValue={search}
             placeholder="Search products..."
@@ -87,13 +89,13 @@ function ShopContent() {
                 router.push(`/shop?${params.toString()}`)
               }
             }}
-            className="w-full bg-white/[0.04] border border-white/10 px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#C9A96E]/40"
+            className="input-dark"
           />
         </div>
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="product-grid">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="space-y-4">
                 <div className="aspect-[3/4] skeleton" />
@@ -103,13 +105,13 @@ function ShopContent() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
+          <div className="neo-state flex flex-col items-center justify-center py-24 gap-4 text-center">
             <p className="text-white/20 text-lg" style={{ fontFamily: 'Cormorant Garamond, serif' }}>No products found</p>
-            <button onClick={() => setFilter('')} className="text-[#C9A96E] text-xs tracking-widest uppercase hover:text-white transition-colors">Clear Filters</button>
+            <button onClick={() => setFilter('')} className="btn-ghost">Clear Filters</button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="product-grid">
               {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
             </div>
 
@@ -117,14 +119,14 @@ function ShopContent() {
             {meta && meta.last_page > 1 && (
               <div className="flex justify-center gap-2 mt-16">
                 {[...Array(meta.last_page)].map((_, i) => (
-                  <button key={i} onClick={() => {
+                  <button key={i} aria-label={`Go to page ${i + 1}`} aria-current={page === i + 1 ? 'page' : undefined} onClick={() => {
                     const params = new URLSearchParams()
                     if (category) params.set('category', category)
                     if (search) params.set('search', search)
                     params.set('page', String(i + 1))
                     router.push(`/shop?${params.toString()}`)
                   }}
-                    className={`w-9 h-9 text-xs border transition-all ${page === i + 1 ? 'border-white/40 text-white' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
+                    className={`pagination-button ${page === i + 1 ? 'is-active' : ''}`}>
                     {i + 1}
                   </button>
                 ))}
