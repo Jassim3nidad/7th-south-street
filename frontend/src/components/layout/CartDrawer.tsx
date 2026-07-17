@@ -1,11 +1,16 @@
 'use client'
+import { useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/store/cart'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 export default function CartDrawer() {
   const { items, isOpen, toggleCart, removeItem, updateQty, total, count } = useCart()
+  const drawerRef = useRef<HTMLDivElement>(null)
+
+  useDismissibleLayer(isOpen, toggleCart, drawerRef)
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
@@ -26,6 +31,7 @@ export default function CartDrawer() {
 
           {/* Drawer */}
           <motion.div
+            ref={drawerRef}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -36,14 +42,14 @@ export default function CartDrawer() {
             aria-label="Shopping cart"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+            <div className="cart-drawer__header flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
               <div>
                 <h2 className="text-white text-sm font-medium tracking-widest uppercase">Cart</h2>
                 <p className="text-white/30 text-xs mt-0.5">{count()} {count() === 1 ? 'item' : 'items'}</p>
               </div>
               <button
                 onClick={toggleCart}
-                className="neo-icon-button !w-9 !h-9"
+                className="neo-icon-button"
                 aria-label="Close cart"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +59,7 @@ export default function CartDrawer() {
             </div>
 
             {/* Items */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="cart-drawer__items flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                   <div className="neo-inset w-16 h-16 flex items-center justify-center">
@@ -77,10 +83,10 @@ export default function CartDrawer() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex gap-4 p-3 neo-surface-sm"
+                    className="cart-drawer__item flex gap-4 p-3 neo-surface-sm"
                   >
                     {/* Image */}
-                    <div className="w-20 h-24 neo-inset overflow-hidden flex-shrink-0">
+                    <div className="cart-drawer__item-image w-20 h-24 neo-inset overflow-hidden flex-shrink-0">
                       {item.image ? (
                         <Image src={item.image} alt={item.name} width={80} height={96} className="w-full h-full object-cover" />
                       ) : (
@@ -96,12 +102,12 @@ export default function CartDrawer() {
                       <p className="text-white/40 text-xs mt-0.5 tracking-wider">Size: {item.size}</p>
                       <p className="text-[#C9A96E] text-sm mt-1">{fmt(item.price)}</p>
 
-                      <div className="flex items-center justify-between mt-3">
+                      <div className="cart-drawer__item-controls flex items-center justify-between mt-3">
                         {/* Qty */}
-                        <div className="neo-inset flex items-center rounded-xl overflow-hidden">
+                        <div className="cart-quantity neo-inset flex items-center rounded-xl overflow-hidden">
                           <button
                             onClick={() => updateQty(item.id, item.size, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center text-white/40 hover:text-white transition-colors"
+                            className="cart-quantity__button flex items-center justify-center text-white/40 hover:text-white transition-colors"
                             aria-label={`Decrease quantity of ${item.name}`}
                           >
                             −
@@ -109,7 +115,7 @@ export default function CartDrawer() {
                           <span className="w-7 text-center text-white text-xs">{item.quantity}</span>
                           <button
                             onClick={() => updateQty(item.id, item.size, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center text-white/40 hover:text-white transition-colors"
+                            className="cart-quantity__button flex items-center justify-center text-white/40 hover:text-white transition-colors"
                             aria-label={`Increase quantity of ${item.name}`}
                           >
                             +
@@ -118,7 +124,7 @@ export default function CartDrawer() {
 
                         <button
                           onClick={() => removeItem(item.id, item.size)}
-                          className="text-white/20 hover:text-[#E63B2E] text-xs tracking-wider uppercase transition-colors"
+                          className="cart-remove-button text-white/20 hover:text-[#E63B2E] text-xs tracking-wider uppercase transition-colors"
                           aria-label={`Remove ${item.name} from cart`}
                         >
                           Remove
@@ -132,7 +138,7 @@ export default function CartDrawer() {
 
             {/* Footer */}
             {items.length > 0 && (
-              <div className="border-t border-white/[0.06] px-6 py-6 space-y-4">
+              <div className="cart-drawer__footer border-t border-white/[0.06] px-6 py-6 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-white/50 text-xs tracking-widest uppercase">Subtotal</span>
                   <span className="text-white text-base font-medium">{fmt(total())}</span>
