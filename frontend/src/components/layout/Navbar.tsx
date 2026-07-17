@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/store/cart'
 import ThemeToggle from '@/components/theme/ThemeToggle'
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 const links = [
   { href: '/shop', label: 'Shop' },
@@ -17,6 +18,7 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
   const { count, toggleCart } = useCart()
   const cartCount = count()
@@ -30,10 +32,7 @@ export default function Navbar() {
 
   useEffect(() => setMenuOpen(false), [pathname])
 
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [menuOpen])
+  useDismissibleLayer(menuOpen, () => setMenuOpen(false), mobileMenuRef)
 
   return (
     <>
@@ -94,6 +93,7 @@ export default function Navbar() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            ref={mobileMenuRef}
             id="mobile-navigation"
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
