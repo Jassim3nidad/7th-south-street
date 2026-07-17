@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/store/cart'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 
 const links = [
   { href: '/shop', label: 'Shop' },
@@ -63,6 +64,7 @@ export default function Navbar() {
           </div>
 
           <div className="site-nav__actions">
+            <ThemeToggle compact className="site-nav__theme" />
             <button onClick={toggleCart} className="neo-icon-button" aria-label={`Open cart, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}>
               <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -106,6 +108,10 @@ export default function Navbar() {
                 </motion.div>
               ))}
             </nav>
+            <div className="mobile-navigation__theme">
+              <span>Appearance</span>
+              <ThemeToggle />
+            </div>
             <p>7Th South Street © 2024</p>
           </motion.div>
         )}
