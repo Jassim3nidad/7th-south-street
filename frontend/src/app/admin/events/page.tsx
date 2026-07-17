@@ -42,10 +42,10 @@ export default function AdminEventsPage() {
 
   return (
     <div className="p-8 lg:p-10">
-      <div className="flex items-center justify-between mb-10">
+      <div className="admin-page-header">
         <div>
-          <p className="text-[#C9A96E] text-[10px] tracking-[0.4em] uppercase mb-2">Manage</p>
-          <h1 className="text-white text-3xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Events</h1>
+          <p className="neo-kicker mb-2">Manage</p>
+          <h1 className="admin-page-title">Events</h1>
         </div>
         <button onClick={openNew} className="btn-primary text-xs px-6 py-2.5">+ New Event</button>
       </div>
@@ -53,7 +53,7 @@ export default function AdminEventsPage() {
       <div className="space-y-3">
         {loading ? [...Array(3)].map((_,i) => <div key={i} className="h-20 skeleton" />) :
           events.map((ev: any) => (
-            <div key={ev.id} className="border border-white/[0.06] p-5 hover:border-white/[0.1] transition-colors">
+              <div key={ev.id} className="admin-card p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
@@ -77,19 +77,19 @@ export default function AdminEventsPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div initial={{ opacity:0, scale:0.97 }} animate={{ opacity:1, scale:1 }}
-            className="bg-[#0E0C0A] border border-white/[0.08] w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/35 backdrop-blur-sm flex items-center justify-center p-4">
+          <motion.div initial={false} animate={{ opacity:1, scale:1 }}
+            className="neo-modal w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={editing ? 'Edit event' : 'New event'}>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-white text-xl font-light" style={{ fontFamily:'Cormorant Garamond, serif' }}>{editing ? 'Edit Event' : 'New Event'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white">
+            <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white" aria-label="Close event form">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Event Title *</label>
                 <input value={form.title} onChange={e => setForm({...form,title:e.target.value})} required className="input-dark" /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Start Date/Time *</label>
                   <input type="datetime-local" value={form.event_date} onChange={e => setForm({...form,event_date:e.target.value})} required className="input-dark" /></div>
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">End Date/Time</label>
@@ -101,7 +101,7 @@ export default function AdminEventsPage() {
                 <input value={form.location_address} onChange={e => setForm({...form,location_address:e.target.value})} className="input-dark" /></div>
               <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Description</label>
                 <textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} rows={3} className="input-dark resize-none" /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Max RSVP (0=unlimited)</label>
                   <input type="number" min="0" value={form.max_rsvp} onChange={e => setForm({...form,max_rsvp:e.target.value})} className="input-dark" /></div>
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Status</label>
