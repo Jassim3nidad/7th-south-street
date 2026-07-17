@@ -9,8 +9,8 @@ const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', c
 
 function StatCard({ label, value, sub, accent = false }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-      className="border border-white/[0.06] p-6 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+    <motion.div initial={false} animate={{ opacity: 1, y: 0 }}
+      className="admin-card p-6 transition-transform hover:-translate-y-0.5">
       <p className="text-white/30 text-[10px] tracking-widest uppercase mb-3">{label}</p>
       <p className={`text-3xl font-light mb-1 ${accent ? 'text-[#C9A96E]' : 'text-white'}`}
         style={{ fontFamily: 'Cormorant Garamond, serif' }}>{value}</p>
@@ -22,7 +22,7 @@ function StatCard({ label, value, sub, accent = false }: { label: string; value:
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#111010] border border-white/10 px-3 py-2 text-xs">
+    <div className="neo-surface-sm px-3 py-2 text-xs">
       <p className="text-white/40 mb-1">{label}</p>
       {payload.map((p: any) => (
         <p key={p.name} style={{ color: p.color }}>{p.name}: {p.name === 'revenue' ? fmt(p.value) : p.value}</p>
@@ -55,9 +55,9 @@ export default function DashboardPage() {
   return (
     <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="mb-10">
-        <p className="text-[#C9A96E] text-[10px] tracking-[0.4em] uppercase mb-2">Overview</p>
-        <h1 className="text-white text-3xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Dashboard</h1>
+      <div className="admin-page-header">
+        <div><p className="neo-kicker mb-2">Overview</p>
+        <h1 className="admin-page-title">Dashboard</h1></div>
       </div>
 
       {/* Stats */}
@@ -70,15 +70,15 @@ export default function DashboardPage() {
 
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         {/* Sales Chart */}
-        <div className="lg:col-span-2 border border-white/[0.06] p-6 bg-white/[0.02]">
+        <div className="lg:col-span-2 admin-card p-6">
           <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Revenue — Last 6 Months</p>
           {salesByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={salesByMonth} barSize={20}>
-                <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="revenue" fill="#C9A96E" opacity={0.8} name="revenue" />
+                <XAxis dataKey="month" tick={{ fill: '#758197', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#758197', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(66,86,124,0.06)' }} />
+                <Bar dataKey="revenue" fill="#3c55ee" opacity={0.88} name="revenue" radius={[8, 8, 2, 2]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -87,7 +87,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Products */}
-        <div className="border border-white/[0.06] p-6 bg-white/[0.02]">
+        <div className="admin-card p-6">
           <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Top Products</p>
           <div className="space-y-4">
             {topProducts.length === 0 && <p className="text-white/15 text-sm">No data</p>}
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <div className="border border-white/[0.06] p-6 bg-white/[0.02]">
+        <div className="admin-card p-6">
           <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Recent Orders</p>
           <div className="space-y-3">
             {recentOrders.length === 0 && <p className="text-white/15 text-sm">No orders yet</p>}
@@ -126,7 +126,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Low Stock */}
-        <div className="border border-white/[0.06] p-6 bg-white/[0.02]">
+        <div className="admin-card p-6">
           <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">
             Low Stock Alerts
             {lowStock.length > 0 && <span className="ml-2 px-1.5 py-0.5 bg-[#E63B2E]/20 text-[#E63B2E] text-[9px] rounded-sm">{lowStock.length}</span>}
