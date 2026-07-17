@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`dark ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
+      className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
       <body
         className="antialiased"
@@ -53,14 +53,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#1A1614',
-              color: '#F5F2EE',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--neo-surface-strong)',
+              color: 'var(--neo-text)',
+              border: '1px solid rgba(255,255,255,0.82)',
+              borderRadius: '16px',
+              boxShadow: 'var(--neo-shadow-raised-sm)',
               fontFamily: 'var(--font-body), sans-serif',
               fontSize: '13px',
               letterSpacing: '0.02em',
             },
-            success: { iconTheme: { primary: '#C9A96E', secondary: '#080808' } },
+            success: { iconTheme: { primary: '#2474f5', secondary: '#ffffff' } },
+            error: { iconTheme: { primary: '#bf3e50', secondary: '#ffffff' } },
           }}
         />
       </body>
