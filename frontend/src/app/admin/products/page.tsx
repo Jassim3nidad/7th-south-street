@@ -62,16 +62,16 @@ export default function AdminProductsPage() {
 
   return (
     <div className="p-8 lg:p-10">
-      <div className="flex items-center justify-between mb-10">
+      <div className="admin-page-header">
         <div>
-          <p className="text-[#C9A96E] text-[10px] tracking-[0.4em] uppercase mb-2">Manage</p>
-          <h1 className="text-white text-3xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Products</h1>
+          <p className="neo-kicker mb-2">Manage</p>
+          <h1 className="admin-page-title">Products</h1>
         </div>
         <button onClick={openNew} className="btn-primary text-xs px-6 py-2.5">+ Add Product</button>
       </div>
 
       {/* Table */}
-      <div className="border border-white/[0.06] overflow-hidden">
+      <div className="neo-table-shell overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.06]">
@@ -117,12 +117,12 @@ export default function AdminProductsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0E0C0A] border border-white/[0.08] w-full max-w-lg max-h-[90vh] overflow-y-auto p-8">
+        <div className="fixed inset-0 z-50 bg-slate-900/35 backdrop-blur-sm flex items-center justify-center p-4">
+          <motion.div initial={false} animate={{ opacity: 1, scale: 1 }}
+            className="neo-modal w-full max-w-lg max-h-[90vh] overflow-y-auto p-8" role="dialog" aria-modal="true" aria-label={editing ? 'Edit product' : 'New product'}>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-white text-xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>{editing ? 'Edit Product' : 'New Product'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white transition-colors">
+            <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white transition-colors" aria-label="Close product form">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -131,7 +131,7 @@ export default function AdminProductsPage() {
                 <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} required className="input-dark" placeholder="7SS Arch Logo Snapback" /></div>
               <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">SKU *</label>
                 <input value={form.sku} onChange={e => setForm({...form, sku: e.target.value})} required className="input-dark" placeholder="HW-SNAP-001" /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Price (PHP) *</label>
                   <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required className="input-dark" placeholder="895" /></div>
                 <div><label className="text-white/30 text-[10px] tracking-widest uppercase block mb-1.5">Compare Price</label>
