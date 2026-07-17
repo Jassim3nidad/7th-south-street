@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAdmin } from '@/store/admin'
 import { inventoryApi } from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -10,13 +10,13 @@ export default function AdminInventoryPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Record<number, string>>({})
 
-  const load = () => {
+  const load = useCallback(() => {
     if (!token) return
     setLoading(true)
     inventoryApi.list(token).then((r: any) => setItems(r.data || [])).finally(() => setLoading(false))
-  }
+  }, [token])
 
-  useEffect(() => { load() }, [token])
+  useEffect(() => { load() }, [load])
 
   const saveStock = async (id: number) => {
     if (!token || editing[id] === undefined) return
@@ -36,10 +36,10 @@ export default function AdminInventoryPage() {
 
   return (
     <div className="p-8 lg:p-10">
-      <div className="flex items-center justify-between mb-10">
+      <div className="admin-page-header">
         <div>
-          <p className="text-[#C9A96E] text-[10px] tracking-[0.4em] uppercase mb-2">Manage</p>
-          <h1 className="text-white text-3xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Inventory</h1>
+          <p className="neo-kicker mb-2">Manage</p>
+          <h1 className="admin-page-title">Inventory</h1>
         </div>
         <div className="flex items-center gap-2 text-white/20 text-xs">
           <span className="w-2 h-2 bg-green-400 rounded-full"></span> In Stock
@@ -56,7 +56,7 @@ export default function AdminInventoryPage() {
           const hasLow = variants.some((v: any) => v.stock_quantity > 0 && v.stock_quantity <= v.low_stock_threshold)
           const hasOut = variants.some((v: any) => v.stock_quantity === 0)
           return (
-            <div key={productName} className={`border p-6 transition-colors ${hasOut ? 'border-red-900/30' : hasLow ? 'border-yellow-900/30' : 'border-white/[0.06]'}`}>
+            <div key={productName} className={`admin-card p-6 ${hasOut ? 'border-red-900/30' : hasLow ? 'border-yellow-900/30' : ''}`}>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <p className="text-white/80 text-sm font-medium">{productName}</p>
@@ -70,7 +70,7 @@ export default function AdminInventoryPage() {
                   const isOut = v.stock_quantity === 0
                   const isLow = !isOut && v.stock_quantity <= v.low_stock_threshold
                   return (
-                    <div key={v.id} className={`border p-3 transition-colors ${isOut ? 'border-red-900/40 bg-red-950/20' : isLow ? 'border-yellow-900/40 bg-yellow-950/10' : 'border-white/[0.06]'}`}>
+                    <div key={v.id} className={`inventory-variant neo-inset p-3 ${isOut ? 'border-red-900/40 bg-red-950/20' : isLow ? 'border-yellow-900/40 bg-yellow-950/10' : ''}`}>
                       <p className={`text-[10px] tracking-widest uppercase mb-2 font-medium ${isOut ? 'text-red-400/60' : isLow ? 'text-yellow-400/60' : 'text-white/40'}`}>
                         {v.size || 'OS'}
                       </p>
@@ -84,7 +84,7 @@ export default function AdminInventoryPage() {
                         />
                         {editing[v.id] !== undefined && (
                           <button onClick={() => saveStock(v.id)}
-                            className="w-6 h-6 flex items-center justify-center border border-[#C9A96E]/30 text-[#C9A96E] hover:bg-[#C9A96E]/10 transition-colors">
+                            className="w-6 h-6 flex items-center justify-center border border-[#C9A96E]/30 text-[#C9A96E] hover:bg-[#C9A96E]/10 transition-colors" aria-label={`Save stock for size ${v.size || 'OS'}`}>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
