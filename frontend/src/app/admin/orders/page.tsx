@@ -87,7 +87,7 @@ export default function AdminOrdersPage() {
 
       {/* Order detail modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 bg-slate-900/35 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+        <div className="theme-backdrop fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelected(null)}>
           <div className="neo-modal w-full max-w-md p-8 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Order ${selected.order_number}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
