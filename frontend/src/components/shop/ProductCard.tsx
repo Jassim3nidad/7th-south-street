@@ -24,15 +24,15 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group product-card"
+      className="group product-card h-full"
     >
       <Link href={`/shop/${product.slug}`} className="block">
         {/* Image container */}
-        <div className="relative aspect-[3/4] bg-[#111010] border border-white/[0.05] overflow-hidden mb-4">
+        <div className="product-card__media relative aspect-[3/4] overflow-hidden">
           {product.primary_image ? (
             <Image
               src={product.primary_image}
@@ -41,9 +41,9 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
               className="product-card-image object-cover"
             />
           ) : (
-            <div className="product-card-image absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <div className="product-card-image product-card__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="w-12 h-12 flex items-center justify-center">
-                <img src="/logo.png" alt="7SS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.15 }} />
+                <Image src="/logo.png" alt="7SS Logo" width={48} height={48} className="brand-logo h-full w-full object-contain opacity-25" />
               </div>
               <span className="text-white/10 text-xs tracking-widest uppercase">{product.category_name}</span>
             </div>
@@ -52,17 +52,17 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             {isSoldOut && (
-              <span className="px-2 py-1 bg-[#080808]/90 text-white/50 text-[9px] tracking-widest uppercase border border-white/10">
+              <span className="product-card__badge px-2 py-1 bg-white/80 text-white/50 text-[9px] tracking-widest uppercase border border-white/10">
                 Sold Out
               </span>
             )}
             {isLowStock && (
-              <span className="px-2 py-1 bg-[#C9A96E]/10 text-[#C9A96E] text-[9px] tracking-widest uppercase border border-[#C9A96E]/30">
+              <span className="product-card__badge px-2 py-1 bg-blue-50/90 text-[#C9A96E] text-[9px] tracking-widest uppercase border border-[#C9A96E]/30">
                 Low Stock
               </span>
             )}
             {product.compare_price && product.compare_price > product.price && (
-              <span className="px-2 py-1 bg-[#E63B2E]/10 text-[#E63B2E] text-[9px] tracking-widest uppercase border border-[#E63B2E]/30">
+              <span className="product-card__badge px-2 py-1 bg-red-50/90 text-[#E63B2E] text-[9px] tracking-widest uppercase border border-[#E63B2E]/30">
                 Sale
               </span>
             )}
@@ -71,7 +71,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
           {/* Quick add overlay */}
           {!isSoldOut && (
             <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]">
-              <div className="bg-[#080808]/95 backdrop-blur-sm border-t border-white/10 py-3 text-center">
+              <div className="product-card__reveal backdrop-blur-sm border-t border-white/10 py-3 text-center">
                 <span className="text-white text-[10px] font-medium tracking-widest uppercase">View Product</span>
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
         </div>
 
         {/* Info */}
-        <div className="space-y-1.5">
+        <div className="product-card__info space-y-1.5">
           {product.category_name && (
             <p className="text-white/30 text-[10px] tracking-widest uppercase">{product.category_name}</p>
           )}
