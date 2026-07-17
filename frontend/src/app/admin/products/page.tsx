@@ -117,7 +117,7 @@ export default function AdminProductsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-slate-900/35 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="theme-backdrop fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4">
           <motion.div initial={false} animate={{ opacity: 1, scale: 1 }}
             className="neo-modal w-full max-w-lg max-h-[90vh] overflow-y-auto p-8" role="dialog" aria-modal="true" aria-label={editing ? 'Edit product' : 'New product'}>
             <div className="flex justify-between items-center mb-8">
