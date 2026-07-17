@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useAdmin } from '@/store/admin'
 import { authApi } from '@/lib/api'
 import toast from 'react-hot-toast'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '◈' },
@@ -68,6 +69,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           )
         })}
       </nav>
+
+      <div className="admin-theme">
+        <span>Appearance</span>
+        <ThemeToggle />
+      </div>
 
       <div className="admin-user">
         <div className="admin-user__identity">
