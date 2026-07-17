@@ -20,7 +20,7 @@ function Countdown({ date }: { date: string }) {
     calc(); const id = setInterval(calc, 1000); return () => clearInterval(id)
   }, [date])
   return (
-    <div className="flex items-end gap-6">
+    <div className="flex items-end gap-3 sm:gap-6">
       {[['Days', t.d], ['Hours', t.h], ['Min', t.m], ['Sec', t.s]].map(([l, v]) => (
         <div key={l as string}>
           <p className="text-white font-light" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 72px)', lineHeight: 1 }}>{String(v).padStart(2, '0')}</p>
@@ -63,7 +63,7 @@ export default function EventDetailPage() {
   }
 
   if (loading) return (
-    <main className="bg-[#080808] min-h-screen"><Navbar />
+    <main className="site-shell"><Navbar />
       <div className="pt-40 max-w-4xl mx-auto px-6 space-y-6">
         <div className="h-6 skeleton w-32" /><div className="h-16 skeleton w-2/3" /><div className="h-4 skeleton w-1/3" />
       </div>
@@ -71,7 +71,7 @@ export default function EventDetailPage() {
   )
 
   if (!event) return (
-    <main className="bg-[#080808] min-h-screen flex items-center justify-center"><Navbar />
+    <main className="site-shell flex items-center justify-center"><Navbar />
       <p className="text-white/30">Event not found</p>
     </main>
   )
@@ -80,11 +80,11 @@ export default function EventDetailPage() {
   const isFullyBooked = event.max_rsvp > 0 && event.rsvp_count >= event.max_rsvp
 
   return (
-    <main className="bg-[#080808] min-h-screen">
+    <main className="site-shell">
       <Navbar />
       <CartDrawer />
 
-      <div className="pt-28 max-w-5xl mx-auto px-6 lg:px-12 py-16">
+      <div className="site-container detail-layout max-w-5xl">
         {/* Breadcrumb */}
         <p className="text-white/20 text-xs tracking-widest uppercase mb-8">
           <Link href="/events" className="hover:text-white/40 transition-colors">Events</Link>
@@ -94,8 +94,8 @@ export default function EventDetailPage() {
 
         <div className="grid lg:grid-cols-5 gap-12">
           {/* Left: Details */}
-          <div className="lg:col-span-3">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="lg:col-span-3 neo-panel">
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center gap-3 mb-6">
                 <span className={`text-[10px] tracking-widest uppercase px-2 py-1 border ${isPast ? 'border-white/10 text-white/30' : 'border-[#C9A96E]/30 text-[#C9A96E]'}`}>
                   {event.status}
@@ -156,7 +156,7 @@ export default function EventDetailPage() {
 
               {/* Countdown */}
               {!isPast && (
-                <div className="border-t border-white/[0.06] pt-8">
+                <div className="neo-inset p-6">
                   <p className="text-white/20 text-[10px] tracking-widest uppercase mb-6">Countdown</p>
                   <Countdown date={event.event_date} />
                 </div>
@@ -166,8 +166,8 @@ export default function EventDetailPage() {
 
           {/* Right: RSVP */}
           <div className="lg:col-span-2">
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-              className="border border-white/[0.06] p-6 sticky top-24">
+            <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+              className="neo-panel sticky top-24">
               {isPast ? (
                 <div className="text-center py-8">
                   <p className="text-white/30 text-sm mb-2" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px' }}>This event has passed</p>
@@ -179,7 +179,7 @@ export default function EventDetailPage() {
                 </div>
               ) : rsvpDone ? (
                 <div className="text-center py-8 space-y-3">
-                  <div className="w-12 h-12 border border-[#C9A96E]/40 flex items-center justify-center mx-auto">
+                  <div className="neo-inset w-12 h-12 flex items-center justify-center mx-auto">
                     <svg className="w-5 h-5 text-[#C9A96E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
                     </svg>
@@ -198,7 +198,7 @@ export default function EventDetailPage() {
                     <div><label className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Phone</label>
                       <input value={rsvpForm.phone} onChange={e => setRsvpForm({ ...rsvpForm, phone: e.target.value })} className="input-dark" placeholder="+63 9XX XXX XXXX" /></div>
                     <button type="submit" disabled={rsvpLoading}
-                      className="w-full py-3.5 bg-[#F5F2EE] text-[#080808] text-xs font-medium tracking-widest uppercase hover:bg-[#C9A96E] transition-colors duration-300 disabled:opacity-50 mt-2">
+                      className="btn-primary w-full mt-2">
                       {rsvpLoading ? 'Confirming...' : 'RSVP Now — Free'}
                     </button>
                     <p className="text-white/15 text-[10px] text-center tracking-wider">No spam. Just event updates.</p>
