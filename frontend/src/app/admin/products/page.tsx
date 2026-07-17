@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAdmin } from '@/store/admin'
 import { productsApi, categoriesApi } from '@/lib/api'
 import toast from 'react-hot-toast'
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
 
@@ -15,6 +16,9 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
   const [form, setForm] = useState({ name: '', description: '', price: '', compare_price: '', category_id: '', sku: '', status: 'available', is_featured: false, has_sizes: true })
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useDismissibleLayer(showForm, () => setShowForm(false), modalRef)
 
   const load = () => {
     setLoading(true)
@@ -102,8 +106,8 @@ export default function AdminProductsPage() {
                 <td className="px-4 py-3 text-white/30 text-xs">{p.is_featured ? '★' : '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-3">
-                    <button onClick={() => openEdit(p)} className="text-white/30 hover:text-[#C9A96E] text-[10px] tracking-widest uppercase transition-colors">Edit</button>
-                    <button onClick={() => handleDelete(p.id)} className="text-white/20 hover:text-[#E63B2E] text-[10px] tracking-widest uppercase transition-colors">Del</button>
+                    <button onClick={() => openEdit(p)} className="admin-action-button text-white/30 hover:text-[#C9A96E] text-[10px] tracking-widest uppercase transition-colors">Edit</button>
+                    <button onClick={() => handleDelete(p.id)} className="admin-action-button text-white/20 hover:text-[#E63B2E] text-[10px] tracking-widest uppercase transition-colors">Del</button>
                   </div>
                 </td>
               </tr>
@@ -118,11 +122,11 @@ export default function AdminProductsPage() {
       {/* Form Modal */}
       {showForm && (
         <div className="theme-backdrop fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div initial={false} animate={{ opacity: 1, scale: 1 }}
+          <motion.div ref={modalRef} initial={false} animate={{ opacity: 1, scale: 1 }}
             className="neo-modal w-full max-w-lg max-h-[90vh] overflow-y-auto p-8" role="dialog" aria-modal="true" aria-label={editing ? 'Edit product' : 'New product'}>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-white text-xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>{editing ? 'Edit Product' : 'New Product'}</h2>
-            <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white transition-colors" aria-label="Close product form">
+            <button onClick={() => setShowForm(false)} className="modal-close-button text-white/30 hover:text-white transition-colors" aria-label="Close product form">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -152,11 +156,11 @@ export default function AdminProductsPage() {
                   <option value="archived">Archived</option>
                 </select></div>
               <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="admin-checkbox-option flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.is_featured} onChange={e => setForm({...form, is_featured: e.target.checked})} className="w-3 h-3 accent-[#C9A96E]" />
                   <span className="text-white/50 text-xs tracking-wider">Featured</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="admin-checkbox-option flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.has_sizes} onChange={e => setForm({...form, has_sizes: e.target.checked})} className="w-3 h-3 accent-[#C9A96E]" />
                   <span className="text-white/50 text-xs tracking-wider">Has Sizes</span>
                 </label>
