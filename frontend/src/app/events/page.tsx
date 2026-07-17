@@ -46,29 +46,29 @@ export default function EventsPage() {
   const past = events.filter(e => e.status === 'past')
 
   return (
-    <main className="bg-[#080808] min-h-screen">
+    <main className="site-shell">
       <Navbar />
       <CartDrawer />
 
       {/* Header */}
-      <div className="pt-32 pb-16 px-6 lg:px-12 max-w-7xl mx-auto border-b border-white/[0.06]">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="text-[#C9A96E] text-xs tracking-[0.4em] uppercase mb-3">Pop-Ups</p>
-          <h1 className="text-white font-light" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 6vw, 80px)', letterSpacing: '-0.02em' }}>
+      <div className="page-header site-container neo-surface-sm">
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
+          <p className="neo-kicker">Pop-Ups</p>
+          <h1 className="neo-heading">
             Events
           </h1>
         </motion.div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16">
+      <div className="site-container page-content">
         {/* Upcoming */}
         {upcoming.length > 0 && (
           <section className="mb-20">
             <p className="text-white/30 text-xs tracking-widest uppercase mb-8 pb-4 border-b border-white/[0.06]">Upcoming</p>
             <div className="space-y-4">
               {upcoming.map((event: any, i: number) => (
-                <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                  <div className="border border-white/[0.06] hover:border-white/[0.12] transition-colors duration-300 p-6 lg:p-8">
+                <motion.div key={event.id} initial={false} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                  <div className="event-card neo-surface-sm p-6 lg:p-8">
                     <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                       <div className="lg:col-span-2">
                         <div className="flex items-center gap-4 mb-4">
@@ -97,7 +97,7 @@ export default function EventsPage() {
                           <Link href={`/events/${event.slug}`} className="btn-ghost text-xs px-6 py-3">Details</Link>
                         </div>
                       </div>
-                      <div className="border-t lg:border-t-0 lg:border-l border-white/[0.06] pt-4 lg:pt-0 lg:pl-8">
+                      <div className="event-countdown neo-inset p-5">
                         <p className="text-white/20 text-[10px] tracking-widest uppercase mb-4">Countdown</p>
                         <CountdownTimer eventDate={event.event_date} />
                         {event.max_rsvp > 0 && (
@@ -126,8 +126,8 @@ export default function EventsPage() {
             <p className="text-white/30 text-xs tracking-widest uppercase mb-8 pb-4 border-b border-white/[0.06]">Past Events</p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {past.map((event: any, i: number) => (
-                <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
-                  <div className="border border-white/[0.06] p-5 opacity-60">
+                <motion.div key={event.id} initial={false} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  <div className="neo-surface-sm p-5 opacity-70">
                     <p className="text-white/30 text-xs mb-2">
                       {new Date(event.event_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
@@ -141,7 +141,7 @@ export default function EventsPage() {
         )}
 
         {!loading && events.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
+          <div className="neo-state flex flex-col items-center justify-center py-24 gap-4 text-center">
             <p className="text-white/20 text-2xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>No events scheduled yet</p>
             <p className="text-white/15 text-sm">Check back soon — something's always cooking.</p>
           </div>
