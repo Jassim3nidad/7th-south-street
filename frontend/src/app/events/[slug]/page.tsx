@@ -86,7 +86,7 @@ export default function EventDetailPage() {
 
       <div className="site-container detail-layout max-w-5xl">
         {/* Breadcrumb */}
-        <p className="text-white/20 text-xs tracking-widest uppercase mb-8">
+        <p className="detail-breadcrumb text-white/20 text-xs tracking-widest uppercase mb-8">
           <Link href="/events" className="hover:text-white/40 transition-colors">Events</Link>
           <span className="mx-2">/</span>
           <span>{event.title}</span>
