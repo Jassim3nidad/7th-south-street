@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -8,6 +8,7 @@ import { useAdmin } from '@/store/admin'
 import { authApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import ThemeToggle from '@/components/theme/ThemeToggle'
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '◈' },
@@ -23,6 +24,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const mobileDrawerRef = useRef<HTMLElement>(null)
+
+  useDismissibleLayer(mobileOpen, () => setMobileOpen(false), mobileDrawerRef)
 
   useEffect(() => {
     if (pathname === '/admin' || isAuthenticated()) return
@@ -95,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="neo-inset"><Image src="/logo.png" alt="" width={28} height={28} className="brand-logo" /></span>
           <p>The Vault</p>
         </div>
-        <button type="button" className="neo-icon-button" onClick={() => setMobileOpen(open => !open)} aria-label={mobileOpen ? 'Close admin menu' : 'Open admin menu'} aria-expanded={mobileOpen}>
+        <button type="button" className="neo-icon-button" onClick={() => setMobileOpen(open => !open)} aria-label={mobileOpen ? 'Close admin menu' : 'Open admin menu'} aria-expanded={mobileOpen} aria-controls="admin-mobile-navigation">
           <span className="site-nav__hamburger" aria-hidden="true"><span /><span /><span /></span>
         </button>
       </header>
@@ -104,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {mobileOpen && (
         <div className="admin-mobile-overlay" onClick={() => setMobileOpen(false)}>
-          <aside className="admin-mobile-drawer neo-surface" onClick={event => event.stopPropagation()}>{sidebarContent}</aside>
+          <aside ref={mobileDrawerRef} id="admin-mobile-navigation" className="admin-mobile-drawer neo-surface" onClick={event => event.stopPropagation()}>{sidebarContent}</aside>
         </div>
       )}
 
