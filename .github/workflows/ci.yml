@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_placeholder
+      NEWSLETTER_RATE_LIMIT_SALT: ci-only-placeholder-not-used-at-runtime
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build production application
+        run: npm run build
+
+  database:
+    name: Supabase database checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.109.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Apply migrations and seed
+        run: supabase db reset
+
+      - name: Export local Auth test configuration
+        shell: bash
+        run: |
+          eval "$(supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SECRET_KEY:-$SERVICE_ROLE_KEY}"
+            echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000"
+            echo "AUTH_APP_URL=http://127.0.0.1:3000"
+            echo "MAILPIT_URL=${INBUCKET_URL:-http://127.0.0.1:54324}"
+          } >> "$GITHUB_ENV"
+
+      - name: Run database tests
+        run: supabase test db
+
+      - name: Lint database schema
+        run: supabase db lint --local --level warning
+
+      - name: Start Next.js Auth test server
+        working-directory: frontend
+        shell: bash
+        run: |
+          npm run dev -- --hostname 127.0.0.1 -p 3000 > "$RUNNER_TEMP/auth-next.log" 2>&1 &
+          echo "AUTH_NEXT_PID=$!" >> "$GITHUB_ENV"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          tail -200 "$RUNNER_TEMP/auth-next.log"
+          exit 1
+
+      - name: Run local customer Auth lifecycle
+        working-directory: frontend
+        run: npm run test:auth:integration
+
+      - name: Stop Next.js Auth test server
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${AUTH_NEXT_PID:-}" ]] && kill -0 "$AUTH_NEXT_PID" 2>/dev/null; then
+            kill "$AUTH_NEXT_PID"
+          fi
+          if [[ -f "$RUNNER_TEMP/auth-next.log" ]]; then
+            tail -200 "$RUNNER_TEMP/auth-next.log"
+          fi
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup

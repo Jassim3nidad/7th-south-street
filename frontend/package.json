@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "tsx --test src/**/*.test.ts",
+    "test:auth:integration": "node --test scripts/test-auth-flows.mjs",
     "test:hosted-concurrency": "node --env-file=.env.local scripts/test-hosted-concurrency.mjs",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
