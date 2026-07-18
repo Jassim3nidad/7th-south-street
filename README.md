@@ -93,6 +93,8 @@ npx supabase db lint --local --level warning
 
 The tests cover catalog RLS, cross-user order access, non-admin denial, trusted totals, insufficient inventory, invalid variants, duplicate-submission idempotency, exact-once cancellation restocking, public-function privilege boundaries, admin inventory updates, Storage write/delete denial, server-only newsletter access, and upload signatures. `npm run test:hosted-concurrency` is an explicit hosted-only check that creates uniquely named QA rows and removes them in a `finally` block.
 
+Customer Auth database tests additionally cover profile provisioning, fixed non-privileged roles, email-confirmation synchronization, verified legacy-customer linking, protected identity fields, and cross-user profile, customer, address, and wishlist isolation.
+
 ## Administrator setup
 
 No administrator password is stored or seeded. Create a new user in Supabase Auth with a unique password, then assign the role using the user's verified email:

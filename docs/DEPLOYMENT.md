@@ -81,8 +81,20 @@ Rules:
 In Supabase Auth URL configuration:
 
 - Set the Site URL to the production `NEXT_PUBLIC_SITE_URL`.
-- Add local and preview callback URLs that end in `/auth/callback`.
+- Add the exact production callback URL: `https://7th-south-street.vercel.app/auth/callback`.
+- Add the exact local callback URLs: `http://localhost:3000/auth/callback` and `http://127.0.0.1:3000/auth/callback`.
+- Add an exact `/auth/callback` URL for each approved preview deployment that will exercise Auth.
 - Do not use wildcard redirect patterns broader than required for approved preview domains.
+
+In Supabase Auth email and password configuration:
+
+- Enable email confirmations. Both registration confirmation and password recovery return through `/auth/callback`; the application validates any relative destination before redirecting.
+- Require passwords of at least eight characters with at least one letter and one number, matching `supabase/config.toml` and the application validation.
+- Enable secure password changes so stale signed-in sessions must reauthenticate; recovery-link sessions remain eligible because they are freshly verified.
+- Configure a production SMTP provider and verified sender before enabling customer registration. Supabase's development inbox and hosted default email allowance are not production delivery guarantees.
+- Review the confirmation and recovery templates, expiry settings, rate limits, and sender branding in the hosted project.
+
+The checked-in `supabase/config.toml` configures the local stack. Changing it or applying SQL migrations does not update the hosted project's Auth URL, SMTP, confirmation, or password settings; verify those settings separately in every Supabase environment.
 
 ## Create the first administrator
 
