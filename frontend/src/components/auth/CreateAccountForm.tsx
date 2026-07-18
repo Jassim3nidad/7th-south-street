@@ -30,9 +30,9 @@ const initialValues: CreateAccountValues = {
   confirmPassword: '',
 }
 
-function getCallbackUrl(returnTo: string) {
+function getCallbackUrl() {
   const callbackUrl = new URL('/auth/callback', window.location.origin)
-  callbackUrl.searchParams.set('next', returnTo)
+  callbackUrl.searchParams.set('next', '/account')
   return callbackUrl.toString()
 }
 
@@ -77,7 +77,7 @@ export default function CreateAccountForm({ returnTo }: CreateAccountFormProps) 
         email,
         password: values.password,
         options: {
-          emailRedirectTo: getCallbackUrl(returnTo),
+          emailRedirectTo: getCallbackUrl(),
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -116,7 +116,7 @@ export default function CreateAccountForm({ returnTo }: CreateAccountFormProps) 
       const { error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email: normalizeEmail(values.email),
-        options: { emailRedirectTo: getCallbackUrl(returnTo) },
+        options: { emailRedirectTo: getCallbackUrl() },
       })
 
       if (resendError) {
