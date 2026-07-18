@@ -1,6 +1,18 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSafeReturnPath } from '@/lib/auth/customer-auth'
+import { SUPABASE_COOKIE_OPTIONS } from './cookie-options'
 import type { Database } from '@/types/database'
+
+function isRoute(pathname: string, route: string) {
+  return pathname === route || pathname.startsWith(`${route}/`)
+}
+
+function redirectWithSessionCookies(url: URL, response: NextResponse) {
+  const redirect = NextResponse.redirect(url)
+  response.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie))
+  return redirect
+}
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -9,6 +21,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: SUPABASE_COOKIE_OPTIONS,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet) {
@@ -23,16 +36,31 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data, error } = await supabase.auth.getClaims()
-  const isProtectedAdminPath = request.nextUrl.pathname.startsWith('/admin/')
+  const pathname = request.nextUrl.pathname
+  const userId = !error && typeof data?.claims?.sub === 'string' ? data.claims.sub : null
+  const isProtectedAdminPath = pathname.startsWith('/admin/')
+  const isProtectedCustomerPath = isRoute(pathname, '/account')
+  const isGuestOnlyPath = ['/login', '/create-account', '/forgot-password'].includes(pathname)
+
+  if (isProtectedCustomerPath && !userId) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.search = ''
+    loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
+    return redirectWithSessionCookies(loginUrl, response)
+  }
+
+  if (isGuestOnlyPath && userId) {
+    const destination = getSafeReturnPath(request.nextUrl.searchParams.get('next'), '/account')
+    return redirectWithSessionCookies(new URL(destination, request.url), response)
+  }
 
   if (isProtectedAdminPath) {
-    const userId = typeof data?.claims?.sub === 'string' ? data.claims.sub : null
-
-    if (error || !userId) {
+    if (!userId) {
       const loginUrl = request.nextUrl.clone()
       loginUrl.pathname = '/admin'
       loginUrl.search = ''
-      return NextResponse.redirect(loginUrl)
+      return redirectWithSessionCookies(loginUrl, response)
     }
 
     const { data: role } = await supabase
@@ -43,11 +71,11 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle()
 
     if (!role) {
-      await supabase.auth.signOut()
       const loginUrl = request.nextUrl.clone()
       loginUrl.pathname = '/admin'
-      loginUrl.search = 'error=forbidden'
-      return NextResponse.redirect(loginUrl)
+      loginUrl.search = ''
+      loginUrl.searchParams.set('error', 'forbidden')
+      return redirectWithSessionCookies(loginUrl, response)
     }
   }
 
