@@ -93,8 +93,8 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}"
             echo "SUPABASE_SERVICE_ROLE_KEY=${SECRET_KEY:-$SERVICE_ROLE_KEY}"
-            echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000"
-            echo "AUTH_APP_URL=http://127.0.0.1:3000"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+            echo "AUTH_APP_URL=http://localhost:3000"
             echo "MAILPIT_URL=${INBUCKET_URL:-http://127.0.0.1:54324}"
           } >> "$GITHUB_ENV"
 
@@ -108,10 +108,10 @@ jobs:
         working-directory: frontend
         shell: bash
         run: |
-          npm run dev -- --hostname 127.0.0.1 -p 3000 > "$RUNNER_TEMP/auth-next.log" 2>&1 &
+          npm run dev -- --hostname 0.0.0.0 -p 3000 > "$RUNNER_TEMP/auth-next.log" 2>&1 &
           echo "AUTH_NEXT_PID=$!" >> "$GITHUB_ENV"
           for attempt in {1..60}; do
-            if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then
+            if curl --fail --silent http://localhost:3000/login > /dev/null; then
               exit 0
             fi
             sleep 1

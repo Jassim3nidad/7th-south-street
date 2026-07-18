@@ -147,6 +147,7 @@ async function fetchWithCookies(cookieJar, url, options = {}) {
   const response = await fetch(url, {
     ...options,
     headers,
+    cache: 'no-store',
     redirect: 'manual',
   })
   cookieJar.capture(response)
@@ -272,6 +273,16 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
   let userId
 
   try {
+    await t.test('redirects an unauthenticated customer away from protected pages', async () => {
+      if (!appBaseUrl) return
+
+      const response = await fetchWithCookies(new CookieJar(), `${appBaseUrl}/account`)
+      assert.ok([302, 303, 307, 308].includes(response.status))
+      const destination = getRedirectUrl(response, `${appBaseUrl}/account`)
+      assert.equal(destination.pathname, '/login')
+      assert.equal(destination.searchParams.get('next'), '/account')
+    })
+
     await t.test('registers without a session until email verification', async () => {
       const { data, error } = await signupClient.auth.signUp({
         email,
@@ -394,8 +405,19 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
           'logout should expire every Supabase Auth session cookie chunk',
         )
 
+        const { data: signedOutData, error: signedOutError } = await createCookieClient(loginCookies).auth.getSession()
+        assert.ifError(signedOutError)
+        assert.equal(signedOutData.session, null)
+
         const deniedAccount = await fetchWithCookies(loginCookies, `${appBaseUrl}/account`)
-        assert.ok([302, 303, 307, 308].includes(deniedAccount.status))
+        assert.ok(
+          [302, 303, 307, 308].includes(deniedAccount.status),
+          [
+            `Expected signed-out /account request to redirect, received ${deniedAccount.status}`,
+            `location=${deniedAccount.headers.get('location') ?? 'none'}`,
+            `cookies=${loginCookies.getAll().map(({ name }) => name).join(',') || 'none'}`,
+          ].join('; '),
+        )
         const loginRedirect = getRedirectUrl(deniedAccount, `${appBaseUrl}/account`)
         assert.equal(loginRedirect.pathname, '/login')
         assert.equal(loginRedirect.searchParams.get('next'), '/account')
