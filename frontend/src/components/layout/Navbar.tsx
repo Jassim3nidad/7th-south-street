@@ -4,10 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import type { User } from '@supabase/supabase-js'
+import toast from 'react-hot-toast'
 import { useCart } from '@/store/cart'
 import ThemeToggle from '@/components/theme/ThemeToggle'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
+import { getAuthErrorMessage } from '@/lib/auth/customer-auth'
+import { createClient } from '@/lib/supabase/client'
 
 const links = [
   { href: '/shop', label: 'Shop' },
@@ -18,8 +22,13 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [authUser, setAuthUser] = useState<User | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
   const { count, toggleCart } = useCart()
   const cartCount = count()
 
@@ -32,7 +41,57 @@ export default function Navbar() {
 
   useEffect(() => setMenuOpen(false), [pathname])
 
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!active) return
+      setAuthUser(data.user ?? null)
+      setAuthReady(true)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return
+      setAuthUser(session?.user ?? null)
+      setAuthReady(true)
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
   useDismissibleLayer(menuOpen, () => setMenuOpen(false), mobileMenuRef)
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+
+    setIsLoggingOut(true)
+    setLogoutError('')
+
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      })
+
+      if (!response.ok) throw new Error('Logout failed')
+
+      setAuthUser(null)
+      setMenuOpen(false)
+      router.replace('/')
+      router.refresh()
+    } catch (error) {
+      const message = getAuthErrorMessage(error, 'logout')
+      setLogoutError(message)
+      toast.error(message)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <>
@@ -60,6 +119,25 @@ export default function Navbar() {
                 </Link>
               )
             })}
+            {authReady && (authUser ? (
+              <>
+                <Link href="/account" className={`site-nav__link ${pathname.startsWith('/account') ? 'is-active' : ''}`} aria-current={pathname.startsWith('/account') ? 'page' : undefined}>
+                  Account
+                </Link>
+                <button type="button" onClick={handleLogout} disabled={isLoggingOut} aria-busy={isLoggingOut} className="site-nav__link border-0 bg-transparent">
+                  {isLoggingOut ? 'Signing out…' : 'Logout'}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className={`site-nav__link ${pathname === '/login' ? 'is-active' : ''}`} aria-current={pathname === '/login' ? 'page' : undefined}>
+                  Login
+                </Link>
+                <Link href="/create-account" className={`site-nav__link ${pathname === '/create-account' ? 'is-active' : ''}`} aria-current={pathname === '/create-account' ? 'page' : undefined}>
+                  Create Account
+                </Link>
+              </>
+            ))}
           </div>
 
           <div className="site-nav__actions">
@@ -107,6 +185,34 @@ export default function Navbar() {
                   <Link href={link.href} onClick={() => setMenuOpen(false)}>{link.label}</Link>
                 </motion.div>
               ))}
+              {authReady && (authUser ? (
+                <>
+                  <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                    <Link href="/account" onClick={() => setMenuOpen(false)} aria-current={pathname.startsWith('/account') ? 'page' : undefined}>Account</Link>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      aria-busy={isLoggingOut}
+                      className="w-full rounded-2xl border-0 bg-transparent px-4 py-3 text-left text-[2rem] font-medium text-[var(--neo-text)]"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      {isLoggingOut ? 'Signing out…' : 'Logout'}
+                    </button>
+                  </motion.div>
+                </>
+              ) : (
+                <>
+                  <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                    <Link href="/login" onClick={() => setMenuOpen(false)} aria-current={pathname === '/login' ? 'page' : undefined}>Login</Link>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+                    <Link href="/create-account" onClick={() => setMenuOpen(false)} aria-current={pathname === '/create-account' ? 'page' : undefined}>Create Account</Link>
+                  </motion.div>
+                </>
+              ))}
             </nav>
             <div className="mobile-navigation__theme">
               <span>Appearance</span>
@@ -116,6 +222,9 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+      <p className="sr-only" role="status" aria-live="polite">
+        {logoutError || (isLoggingOut ? 'Signing out.' : '')}
+      </p>
     </>
   )
 }
