@@ -9,6 +9,9 @@ const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const mailpitUrl = process.env.MAILPIT_URL || process.env.INBUCKET_URL || 'http://127.0.0.1:54324'
 const appBaseUrl = process.env.AUTH_APP_URL?.replace(/\/+$/, '') || null
+const authStorageKey = supabaseUrl
+  ? `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`
+  : null
 
 function requireLocalConfiguration() {
   const missing = [
@@ -62,9 +65,12 @@ class CookieJar {
   capture(response) {
     const getSetCookie = response.headers.getSetCookie?.bind(response.headers)
     const combined = response.headers.get('set-cookie')
-    const headers = getSetCookie
+    const rawHeaders = getSetCookie
       ? getSetCookie()
-      : combined?.split(/,(?=\s*[^;,=\s]+=[^;,]*)/) ?? []
+      : combined ? [combined] : []
+    const headers = rawHeaders.flatMap(header => (
+      header.split(/,(?=\s*[^;,=\s]+=[^;,]*)/)
+    ))
 
     for (const header of headers) {
       const [pair, ...attributes] = header.split(';')
@@ -83,6 +89,13 @@ class CookieJar {
       }
     }
   }
+}
+
+function callbackUrl(origin, nextPath, type) {
+  const url = new URL('/auth/callback', origin)
+  url.searchParams.set('next', nextPath)
+  if (type) url.searchParams.set('type', type)
+  return url.toString()
 }
 
 function createMemoryStorage() {
@@ -221,6 +234,26 @@ async function exchangeEmailLink(client, cookieJar, email, expectedType) {
   return data.session
 }
 
+test('CookieJar applies every cookie in a combined Set-Cookie header', () => {
+  const cookieJar = new CookieJar()
+  cookieJar.setAll([
+    { name: 'sb-local-auth-token.0', value: 'first' },
+    { name: 'sb-local-auth-token.1', value: 'second' },
+  ])
+
+  const response = new Response(null, {
+    headers: {
+      'Set-Cookie': [
+        'sb-local-auth-token.0=; Path=/; Max-Age=0; SameSite=Lax',
+        'sb-local-auth-token.1=; Path=/; Max-Age=0; SameSite=Lax',
+      ].join(', '),
+    },
+  })
+
+  cookieJar.capture(response)
+  assert.deepEqual(cookieJar.getAll(), [])
+})
+
 test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) => {
   requireLocalConfiguration()
 
@@ -229,8 +262,8 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
   const originalPassword = 'Streetwear7!Original'
   const updatedPassword = 'Streetwear8!Updated'
   const callbackOrigin = appBaseUrl || 'http://127.0.0.1:3000'
-  const callbackUrl = `${callbackOrigin}/auth/callback?next=/account`
-  const recoveryUrl = `${callbackOrigin}/auth/callback?next=/reset-password&type=recovery`
+  const accountCallbackUrl = callbackUrl(callbackOrigin, '/account')
+  const recoveryUrl = callbackUrl(callbackOrigin, '/reset-password', 'recovery')
   const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
@@ -244,7 +277,7 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
         email,
         password: originalPassword,
         options: {
-          emailRedirectTo: callbackUrl,
+          emailRedirectTo: accountCallbackUrl,
           data: {
             first_name: 'Auth',
             last_name: 'Customer',
@@ -296,7 +329,7 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
       const { data, error } = await duplicateClient.auth.signUp({
         email,
         password: originalPassword,
-        options: { emailRedirectTo: callbackUrl },
+        options: { emailRedirectTo: accountCallbackUrl },
       })
 
       assert.equal(data.session, null)
@@ -354,6 +387,12 @@ test('local Supabase customer Auth lifecycle', { timeout: 120_000 }, async (t) =
           headers: { Accept: 'application/json' },
         })
         assert.equal(logoutResponse.status, 200)
+        assert.ok(
+          !loginCookies.getAll().some(({ name }) => (
+            name === authStorageKey || name.startsWith(`${authStorageKey}.`)
+          )),
+          'logout should expire every Supabase Auth session cookie chunk',
+        )
 
         const deniedAccount = await fetchWithCookies(loginCookies, `${appBaseUrl}/account`)
         assert.ok([302, 303, 307, 308].includes(deniedAccount.status))

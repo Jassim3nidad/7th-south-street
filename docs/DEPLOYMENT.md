@@ -81,9 +81,11 @@ Rules:
 In Supabase Auth URL configuration:
 
 - Set the Site URL to the production `NEXT_PUBLIC_SITE_URL`.
-- Add the exact production callback URL: `https://7th-south-street.vercel.app/auth/callback`.
-- Add the exact local callback URLs: `http://localhost:3000/auth/callback` and `http://127.0.0.1:3000/auth/callback`.
-- Add an exact `/auth/callback` URL for each approved preview deployment that will exercise Auth.
+- Add the exact production callback URLs used by the application:
+  - `https://7th-south-street.vercel.app/auth/callback?next=%2Faccount`
+  - `https://7th-south-street.vercel.app/auth/callback?next=%2Freset-password&type=recovery`
+- Add the same two exact callback paths for each approved local origin (`http://localhost:3000` and `http://127.0.0.1:3000`).
+- Add the same two exact callback URLs for each approved preview deployment that will exercise Auth.
 - Do not use wildcard redirect patterns broader than required for approved preview domains.
 
 In Supabase Auth email and password configuration:
