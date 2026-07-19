@@ -55,6 +55,9 @@ jobs:
       - name: Build production application
         run: npm run build
 
+      - name: Verify Auth middleware is compiled
+        run: node -e "const manifest=require('./.next/server/middleware-manifest.json'); if (!manifest.sortedMiddleware?.includes('/')) throw new Error('Auth middleware is missing from the production build')"
+
   database:
     name: Supabase database checks
     runs-on: ubuntu-latest
@@ -108,7 +111,7 @@ jobs:
         working-directory: frontend
         shell: bash
         run: |
-          npm run dev -- --hostname 0.0.0.0 -p 3000 > "$RUNNER_TEMP/auth-next.log" 2>&1 &
+          npm run dev -- --hostname localhost -p 3000 > "$RUNNER_TEMP/auth-next.log" 2>&1 &
           echo "AUTH_NEXT_PID=$!" >> "$GITHUB_ENV"
           for attempt in {1..60}; do
             if curl --fail --silent http://localhost:3000/login > /dev/null; then
