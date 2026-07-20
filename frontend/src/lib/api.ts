@@ -3,7 +3,6 @@
 type FetchOptions = {
   method?: string
   body?: unknown
-  token?: string
 }
 
 async function apiFetch<T>(endpoint: string, opts: FetchOptions = {}): Promise<T> {
@@ -31,12 +30,12 @@ export const productsApi = {
     return apiFetch<any>(`/products${qs}`)
   },
   get: (id: number | string) => apiFetch<any>(`/products/${id}`),
-  create: (body: unknown, token: string) =>
-    apiFetch<any>('/products', { method: 'POST', body, token }),
-  update: (id: number, body: unknown, token: string) =>
-    apiFetch<any>(`/products/${id}`, { method: 'PUT', body, token }),
-  delete: (id: number, token: string) =>
-    apiFetch<any>(`/products/${id}`, { method: 'DELETE', token }),
+  create: (body: unknown) =>
+    apiFetch<any>('/products', { method: 'POST', body }),
+  update: (id: number, body: unknown) =>
+    apiFetch<any>(`/products/${id}`, { method: 'PUT', body }),
+  delete: (id: number) =>
+    apiFetch<any>(`/products/${id}`, { method: 'DELETE' }),
 }
 
 // ── Categories ───────────────────────────────────────────────
@@ -46,14 +45,14 @@ export const categoriesApi = {
 
 // ── Orders ───────────────────────────────────────────────────
 export const ordersApi = {
-  list: (params?: Record<string, string>, token?: string) => {
+  list: (params?: Record<string, string>) => {
     const qs = params ? '?' + new URLSearchParams(params).toString() : ''
-    return apiFetch<any>(`/orders${qs}`, { token })
+    return apiFetch<any>(`/orders${qs}`)
   },
-  get: (id: number, token?: string) => apiFetch<any>(`/orders/${id}`, { token }),
+  get: (id: number) => apiFetch<any>(`/orders/${id}`),
   create: (body: unknown) => apiFetch<any>('/orders', { method: 'POST', body }),
-  update: (id: number, body: unknown, token: string) =>
-    apiFetch<any>(`/orders/${id}`, { method: 'PUT', body, token }),
+  update: (id: number, body: unknown) =>
+    apiFetch<any>(`/orders/${id}`, { method: 'PUT', body }),
 }
 
 // ── Events ───────────────────────────────────────────────────
@@ -65,25 +64,17 @@ export const eventsApi = {
   get: (id: number | string) => apiFetch<any>(`/events/${id}`),
   rsvp: (eventId: number, body: unknown) =>
     apiFetch<any>(`/events/${eventId}/rsvp`, { method: 'POST', body }),
-  create: (body: unknown, token: string) =>
-    apiFetch<any>('/events', { method: 'POST', body, token }),
-  update: (id: number, body: unknown, token: string) =>
-    apiFetch<any>(`/events/${id}`, { method: 'PUT', body, token }),
-  delete: (id: number, token: string) =>
-    apiFetch<any>(`/events/${id}`, { method: 'DELETE', token }),
-}
-
-// ── Auth ─────────────────────────────────────────────────────
-export const authApi = {
-  login: (email: string, password: string) =>
-    apiFetch<any>('/auth/login', { method: 'POST', body: { email, password } }),
-  me: (token: string) => apiFetch<any>('/auth/me', { token }),
-  logout: () => apiFetch<any>('/auth/logout', { method: 'POST' }),
+  create: (body: unknown) =>
+    apiFetch<any>('/events', { method: 'POST', body }),
+  update: (id: number, body: unknown) =>
+    apiFetch<any>(`/events/${id}`, { method: 'PUT', body }),
+  delete: (id: number) =>
+    apiFetch<any>(`/events/${id}`, { method: 'DELETE' }),
 }
 
 // ── Dashboard ────────────────────────────────────────────────
 export const dashboardApi = {
-  stats: (token: string) => apiFetch<any>('/dashboard/stats', { token }),
+  stats: () => apiFetch<any>('/dashboard/stats'),
 }
 
 // ── Newsletter ───────────────────────────────────────────────
@@ -94,8 +85,8 @@ export const newsletterApi = {
 
 // ── Inventory ────────────────────────────────────────────────
 export const inventoryApi = {
-  list: (token: string, lowStock?: boolean) =>
-    apiFetch<any>(`/inventory${lowStock ? '?low_stock=1' : ''}`, { token }),
-  update: (id: number, stock: number, token: string) =>
-    apiFetch<any>(`/inventory/${id}`, { method: 'PUT', body: { stock_quantity: stock }, token }),
+  list: (lowStock?: boolean) =>
+    apiFetch<any>(`/inventory${lowStock ? '?low_stock=1' : ''}`),
+  update: (id: number, stock: number) =>
+    apiFetch<any>(`/inventory/${id}`, { method: 'PUT', body: { stock_quantity: stock } }),
 }

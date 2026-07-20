@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { useAdmin } from '@/store/admin'
+
 import { dashboardApi } from '@/lib/api'
 
 const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
@@ -32,17 +32,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function DashboardPage() {
-  const { token } = useAdmin()
+  
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) return
-    dashboardApi.stats(token)
+    
+    dashboardApi.stats()
       .then((r: any) => setData(r.data))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [token])
+  }, [])
 
   const overview = data?.overview || {}
   const recentOrders = data?.recent_orders || []

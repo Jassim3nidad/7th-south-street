@@ -1,20 +1,20 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useAdmin } from '@/store/admin'
+
 import { } from '@/lib/api'
 
 export default function AdminCustomersPage() {
-  const { token } = useAdmin()
+  
   const [customers, setCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) return
+    
     fetch('/api/customers', { credentials: 'same-origin' })
       .then(r => r.json())
       .then((r: any) => setCustomers(r.data || []))
       .finally(() => setLoading(false))
-  }, [token])
+  }, [])
 
   return (
     <div className="p-8 lg:p-10">

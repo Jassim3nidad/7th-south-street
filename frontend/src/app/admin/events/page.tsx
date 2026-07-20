@@ -1,13 +1,13 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useAdmin } from '@/store/admin'
+
 import { eventsApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 
 export default function AdminEventsPage() {
-  const { token } = useAdmin()
+  
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -28,18 +28,18 @@ export default function AdminEventsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) return
+    
     try {
       const body = { ...form, max_rsvp: parseInt(form.max_rsvp) }
-      if (editing) { await eventsApi.update(editing.id, body, token); toast.success('Event updated') }
-      else { await eventsApi.create(body, token); toast.success('Event created') }
+      if (editing) { await eventsApi.update(editing.id, body); toast.success('Event updated') }
+      else { await eventsApi.create(body); toast.success('Event created') }
       setShowForm(false); load()
     } catch (err: any) { toast.error(err.message || 'Error') }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this event?') || !token) return
-    try { await eventsApi.delete(id, token); toast.success('Deleted'); load() } catch { toast.error('Failed') }
+    if (!confirm('Delete this event?')) return
+    try { await eventsApi.delete(id); toast.success('Deleted'); load() } catch { toast.error('Failed') }
   }
 
   const statusColors: Record<string, string> = { upcoming:'text-green-400', ongoing:'text-blue-400', past:'text-white/30', cancelled:'text-red-400' }
