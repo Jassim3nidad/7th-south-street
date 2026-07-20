@@ -1,140 +1,153 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import Footer from '@/components/layout/Footer'
-import Navbar from '@/components/layout/Navbar'
-import LogoutButton from '@/components/auth/LogoutButton'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'My Account',
-  description: 'View your 7Th South Street customer profile and order history.',
+  description: 'Manage your 7Th South Street customer account.',
 }
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', {
-  style: 'currency',
-  currency: 'PHP',
-  minimumFractionDigits: 0,
-}).format(amount)
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(amount)
 
-const formatDate = (value: string) => new Intl.DateTimeFormat('en-PH', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-}).format(new Date(value))
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
 
-const formatStatus = (value: string) => value.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'status-pending',
+  confirmed: 'status-confirmed',
+  processing: 'status-processing',
+  shipped: 'status-shipped',
+  delivered: 'status-delivered',
+  cancelled: 'status-cancelled',
+  refunded: 'status-refunded',
+}
 
-export default async function AccountPage() {
+export default async function AccountOverviewPage() {
   const supabase = await createClient()
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null // layout redirects
 
-  if (userError || !user) redirect('/login?next=/account')
-
-  const [profileResult, customerResult, ordersResult] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('full_name,phone')
-      .eq('id', user.id)
-      .maybeSingle(),
-    supabase
-      .from('customers')
-      .select('id,first_name,last_name,email,phone,email_verified_at')
-      .eq('user_id', user.id)
-      .maybeSingle(),
+  const [profileResult, ordersResult, wishlistResult] = await Promise.all([
+    supabase.from('profiles').select('full_name,phone').eq('id', user.id).maybeSingle(),
     supabase
       .from('orders')
-      .select('id,order_number,status,payment_status,total,created_at')
+      .select('id,order_number,status,total,created_at')
       .eq('customer_user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(3),
+    supabase
+      .from('wishlists')
+      .select('product_id', { count: 'exact', head: true })
+      .eq('customer_id',
+        supabase
+          .from('customers')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .then(() => 0) as unknown as number
+      ),
   ])
 
   const profile = profileResult.data
-  const customer = customerResult.data
-  const orders = ordersResult.data ?? []
-  const detailsUnavailable = Boolean(profileResult.error || customerResult.error || ordersResult.error)
-  const metadataName = typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : ''
-  const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ')
-  const displayName = profile?.full_name || customerName || metadataName || 'Customer'
-  const email = user.email || 'Not available'
-  const phone = profile?.phone || customer?.phone || 'Not added'
-  // Auth is the authority for verification; public customer metadata is display-only.
-  const verified = Boolean(user.email_confirmed_at)
+  const recentOrders = ordersResult.data ?? []
+  const displayName = profile?.full_name || user.email?.split('@')[0] || 'Customer'
+
+  // Wishlist count via separate query
+  const { data: customerData } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  let wishlistCount = 0
+  if (customerData?.id) {
+    const { count } = await supabase
+      .from('wishlists')
+      .select('*', { count: 'exact', head: true })
+      .eq('customer_id', customerData.id)
+    wishlistCount = count ?? 0
+  }
 
   return (
-    <main className="site-shell">
-      <Navbar />
-      <div className="site-container account-page">
-        <header className="account-header">
-          <div>
-            <p className="neo-kicker">Customer Account</p>
-            <h1 className="neo-heading">Welcome, {displayName}</h1>
-            <p>Manage your session and review orders connected to your verified account.</p>
-          </div>
-          <LogoutButton />
-        </header>
+    <div className="account-section">
+      {/* Header */}
+      <header className="account-section__header">
+        <p className="neo-kicker">Dashboard</p>
+        <h1 className="account-section__title">Welcome back, {displayName}</h1>
+        <p className="account-section__subtitle">Here's a summary of your account activity.</p>
+      </header>
 
-        {detailsUnavailable ? (
-          <div className="auth-notice auth-notice--error" role="alert">
-            Some account details are temporarily unavailable. Refresh the page or try again later.
-          </div>
-        ) : null}
-
-        <div className="account-grid">
-          <section className="neo-panel account-profile" aria-labelledby="profile-heading">
-            <div className="account-section-heading">
-              <div>
-                <p className="neo-kicker">Profile</p>
-                <h2 id="profile-heading">Customer Details</h2>
-              </div>
-              <span className={`account-verification ${verified ? 'is-verified' : ''}`}>
-                {verified ? 'Email Verified' : 'Verification Pending'}
-              </span>
-            </div>
-
-            <dl className="account-details">
-              <div><dt>Name</dt><dd>{displayName}</dd></div>
-              <div><dt>Email</dt><dd>{email}</dd></div>
-              <div><dt>Phone</dt><dd>{phone}</dd></div>
-            </dl>
-          </section>
-
-          <section className="neo-panel account-orders" aria-labelledby="orders-heading">
-            <div className="account-section-heading">
-              <div>
-                <p className="neo-kicker">History</p>
-                <h2 id="orders-heading">Recent Orders</h2>
-              </div>
-              <span>{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</span>
-            </div>
-
-            {orders.length ? (
-              <div className="account-order-list">
-                {orders.map(order => (
-                  <article key={order.id} className="account-order neo-inset">
-                    <div>
-                      <strong>{order.order_number}</strong>
-                      <time dateTime={order.created_at}>{formatDate(order.created_at)}</time>
-                    </div>
-                    <div className="account-order__status">
-                      <span>{formatStatus(order.status)}</span>
-                      <small>{formatStatus(order.payment_status)}</small>
-                    </div>
-                    <strong>{formatCurrency(Number(order.total))}</strong>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="account-empty">
-                <p>No orders are connected to this account yet.</p>
-                <Link href="/shop" className="btn-primary">Shop The Collection</Link>
-              </div>
-            )}
-          </section>
+      {/* Quick stats */}
+      <div className="account-overview-stats">
+        <div className="account-stat neo-inset">
+          <p className="account-stat__value">{recentOrders.length > 0 ? ordersResult.data?.length ?? 0 : 0}</p>
+          <p className="account-stat__label">Recent Orders</p>
+          <Link href="/account/orders" className="account-stat__link">View all →</Link>
+        </div>
+        <div className="account-stat neo-inset">
+          <p className="account-stat__value">{wishlistCount}</p>
+          <p className="account-stat__label">Wishlist Items</p>
+          <Link href="/account/wishlist" className="account-stat__link">View all →</Link>
+        </div>
+        <div className="account-stat neo-inset">
+          <p className="account-stat__value">{user.email_confirmed_at ? '✓' : '!'}</p>
+          <p className="account-stat__label">{user.email_confirmed_at ? 'Email Verified' : 'Verify Email'}</p>
+          {!user.email_confirmed_at && (
+            <Link href="/account/security" className="account-stat__link">Verify →</Link>
+          )}
         </div>
       </div>
-      <Footer />
-    </main>
+
+      {/* Quick links */}
+      <div className="account-quick-links">
+        {[
+          { href: '/account/profile', label: 'Edit Profile', desc: 'Update your name and phone number' },
+          { href: '/account/addresses', label: 'Manage Addresses', desc: 'Save shipping locations for fast checkout' },
+          { href: '/account/orders', label: 'Order History', desc: 'View all past and pending orders' },
+          { href: '/account/wishlist', label: 'My Wishlist', desc: 'Products you\'ve saved for later' },
+        ].map(link => (
+          <Link key={link.href} href={link.href} className="account-quick-link neo-surface">
+            <p className="account-quick-link__label">{link.label}</p>
+            <p className="account-quick-link__desc">{link.desc}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* Recent orders */}
+      {recentOrders.length > 0 && (
+        <section className="account-recent-orders" aria-labelledby="recent-orders-heading">
+          <div className="account-section__subheader">
+            <p className="neo-kicker">Activity</p>
+            <h2 id="recent-orders-heading" className="account-section__subtitle-heading">Recent Orders</h2>
+            <Link href="/account/orders" className="account-section__view-all">View all</Link>
+          </div>
+          <div className="account-order-list">
+            {recentOrders.map(order => (
+              <Link key={order.id} href={`/account/orders/${order.id}`} className="account-order-row neo-inset">
+                <div>
+                  <strong className="account-order-row__number">{order.order_number}</strong>
+                  <time className="account-order-row__date" dateTime={order.created_at}>
+                    {formatDate(order.created_at)}
+                  </time>
+                </div>
+                <span className={`account-order-row__status ${STATUS_COLORS[order.status] ?? ''}`}>
+                  {order.status.replace(/_/g, ' ')}
+                </span>
+                <strong className="account-order-row__total">{formatCurrency(Number(order.total))}</strong>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {recentOrders.length === 0 && (
+        <div className="account-empty-state neo-inset">
+          <p className="account-empty-state__heading">No orders yet</p>
+          <p className="account-empty-state__body">When you place your first order, it will appear here.</p>
+          <Link href="/shop" className="btn-primary">Browse the Collection</Link>
+        </div>
+      )}
+    </div>
   )
 }
