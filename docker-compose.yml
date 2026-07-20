@@ -1,54 +1,6 @@
 version: '3.9'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: 7ss-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the root .env file}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-7th_south_street}
-      MYSQL_USER: ${MYSQL_USER:-7ss_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the root .env file}
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  backend:
-    image: php:8.2-apache
-    container_name: 7ss-backend
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    volumes:
-      - ./backend:/var/www/html
-      - ./backend/uploads:/var/www/html/uploads
-    environment:
-      DB_HOST: mysql
-      DB_NAME: ${MYSQL_DATABASE:-7th_south_street}
-      DB_USER: ${MYSQL_USER:-7ss_user}
-      DB_PASS: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the root .env file}
-      JWT_SECRET: ${LEGACY_JWT_SECRET:?Set LEGACY_JWT_SECRET in the root .env file}
-      CORS_ORIGIN: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    command: >
-      bash -c "
-        docker-php-ext-install pdo pdo_mysql &&
-        a2enmod rewrite &&
-        echo 'ServerName localhost' >> /etc/apache2/apache2.conf &&
-        apache2-foreground
-      "
-
   frontend:
     image: node:18-alpine
     container_name: 7ss-frontend
@@ -67,7 +19,3 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Set SUPABASE_SERVICE_ROLE_KEY in the root .env file}
       NEWSLETTER_RATE_LIMIT_SALT: ${NEWSLETTER_RATE_LIMIT_SALT:?Set NEWSLETTER_RATE_LIMIT_SALT in the root .env file}
     command: sh -c "npm install && npm run dev"
-    depends_on: []
-
-volumes:
-  mysql_data:
