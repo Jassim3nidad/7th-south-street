@@ -45,11 +45,20 @@ export default function Navbar() {
     let active = true
     const supabase = createClient()
 
-    void supabase.auth.getUser().then(({ data }) => {
-      if (!active) return
-      setAuthUser(data.user ?? null)
-      setAuthReady(true)
-    })
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getUser()
+        if (!active) return
+        setAuthUser(data.user ?? null)
+      } catch (error) {
+        if (!active) return
+        setAuthUser(null)
+      } finally {
+        if (active) setAuthReady(true)
+      }
+    }
+
+    void checkSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return
