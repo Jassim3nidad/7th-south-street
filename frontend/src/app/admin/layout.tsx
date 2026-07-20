@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createClient } from '@/lib/supabase/client'
+import { useAdmin } from '@/store/admin'
+import { authApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import ThemeToggle from '@/components/theme/ThemeToggle'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
@@ -19,39 +20,35 @@ const navItems = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { admin, logout, isAuthenticated, setAuth } = useAdmin()
   const router = useRouter()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const mobileDrawerRef = useRef<HTMLElement>(null)
-  const [adminEmail, setAdminEmail] = useState<string>('')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useDismissibleLayer(mobileOpen, () => setMobileOpen(false), mobileDrawerRef)
 
   useEffect(() => {
-    if (pathname === '/admin') return
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      setAdminEmail(data.user?.email || 'Admin')
-    })
-  }, [pathname])
+    if (pathname === '/admin' || isAuthenticated()) return
+    authApi.me('cookie-session')
+      .then((response: any) => setAuth(response.data, 'cookie-session'))
+      .catch(() => {
+        logout()
+        router.push('/admin')
+      })
+  }, [pathname, isAuthenticated, logout, router, setAuth])
 
   useEffect(() => setMobileOpen(false), [pathname])
 
   if (pathname === '/admin') return <>{children}</>
 
   const handleLogout = async () => {
-    if (isLoggingOut) return
-    setIsLoggingOut(true)
     try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
+      await authApi.logout()
+    } finally {
+      logout()
       toast.success('Logged out')
       router.push('/admin')
-      router.refresh()
-    } catch {
-      toast.error('Failed to log out')
-      setIsLoggingOut(false)
     }
   }
 
@@ -84,15 +81,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="admin-user">
         <div className="admin-user__identity">
-          <span className="admin-user__avatar neo-inset">{adminEmail?.[0]?.toUpperCase() || 'A'}</span>
+          <span className="admin-user__avatar neo-inset">{admin?.name?.[0] || 'A'}</span>
           <div>
-            <p>{adminEmail || 'Admin'}</p>
-            <span>Administrator</span>
+            <p>{admin?.name || 'Admin'}</p>
+            <span>{admin?.role}</span>
           </div>
         </div>
-        <button onClick={handleLogout} disabled={isLoggingOut} className="btn-ghost">
-          {isLoggingOut ? 'Signing Out…' : 'Sign Out'}
-        </button>
+        <button onClick={handleLogout} className="btn-ghost">Sign Out</button>
       </div>
     </>
   )
