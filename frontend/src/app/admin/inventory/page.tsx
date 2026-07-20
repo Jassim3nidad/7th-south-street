@@ -1,27 +1,27 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-
+import { useAdmin } from '@/store/admin'
 import { inventoryApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 export default function AdminInventoryPage() {
-  
+  const { token } = useAdmin()
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Record<number, string>>({})
 
   const load = useCallback(() => {
-    
+    if (!token) return
     setLoading(true)
-    inventoryApi.list().then((r: any) => setItems(r.data || [])).finally(() => setLoading(false))
-  }, [])
+    inventoryApi.list(token).then((r: any) => setItems(r.data || [])).finally(() => setLoading(false))
+  }, [token])
 
   useEffect(() => { load() }, [load])
 
   const saveStock = async (id: number) => {
-    if (editing[id] === undefined) return
+    if (!token || editing[id] === undefined) return
     try {
-      await inventoryApi.update(id, parseInt(editing[id]))
+      await inventoryApi.update(id, parseInt(editing[id]), token)
       toast.success('Stock updated')
       setEditing(prev => { const n = { ...prev }; delete n[id]; return n })
       load()
