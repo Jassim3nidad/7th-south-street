@@ -1,0 +1,10 @@
+{
+  "name": "7th-south-street-root",
+  "private": true,
+  "scripts": {
+    "setup": "cd frontend && npm install && node -e \"const fs=require('fs'); if(!fs.existsSync('.env.local')){fs.copyFileSync('.env.example','.env.local')}\"",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "test": "cd frontend && npm test"
+  }
+}
