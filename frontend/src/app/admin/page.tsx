@@ -1,38 +1,32 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAdmin } from '@/store/admin'
+import { authApi } from '@/lib/api'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import ThemeToggle from '@/components/theme/ThemeToggle'
-import { AuthNotice } from '@/components/auth/AuthShell'
 
-function AdminLoginForm() {
+export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const { setAuth, isAuthenticated } = useAdmin()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
+
+  useEffect(() => {
+    if (isAuthenticated()) router.push('/admin/dashboard')
+  }, [isAuthenticated, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError || !data.user) {
-        throw new Error('Invalid email or password.')
-      }
-
+      const res: any = await authApi.login(email, password)
+      setAuth(res.data.admin, res.data.token)
       toast.success('Welcome back.')
-      router.replace('/admin/dashboard')
-      router.refresh()
+      router.push('/admin/dashboard')
     } catch (err: any) {
       toast.error(err.message || 'Login failed')
     } finally {
@@ -59,12 +53,6 @@ function AdminLoginForm() {
           </div>
         </div>
 
-        {error === 'forbidden' && (
-          <div className="mb-6">
-            <AuthNotice tone="error">Access denied. You do not have administrator privileges.</AuthNotice>
-          </div>
-        )}
-
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="text-white/30 text-[10px] tracking-widest uppercase block mb-2">Email</label>
@@ -88,13 +76,5 @@ function AdminLoginForm() {
         </p>
       </motion.div>
     </main>
-  )
-}
-
-export default function AdminLoginPage() {
-  return (
-    <Suspense fallback={<div className="site-shell flex items-center justify-center">Loading...</div>}>
-      <AdminLoginForm />
-    </Suspense>
   )
 }
