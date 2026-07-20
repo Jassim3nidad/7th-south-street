@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
-
+import { useAdmin } from '@/store/admin'
 import { ordersApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
@@ -9,7 +9,7 @@ const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', c
 const statusColors: Record<string, string> = { pending:'text-yellow-400', confirmed:'text-blue-400', processing:'text-purple-400', shipped:'text-cyan-400', delivered:'text-green-400', cancelled:'text-red-400', refunded:'text-orange-400' }
 
 export default function AdminOrdersPage() {
-  
+  const { token } = useAdmin()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
@@ -19,19 +19,19 @@ export default function AdminOrdersPage() {
   useDismissibleLayer(Boolean(selected), () => setSelected(null), modalRef)
 
   const load = useCallback(() => {
-    
+    if (!token) return
     setLoading(true)
-    ordersApi.list(filter ? { status: filter } : {})
+    ordersApi.list(filter ? { status: filter } : {}, token)
       .then((r: any) => setOrders(r.data || []))
       .finally(() => setLoading(false))
-  }, [filter])
+  }, [filter, token])
 
   useEffect(() => { load() }, [load])
 
   const updateStatus = async (id: number, status: string) => {
-    
+    if (!token) return
     try {
-      await ordersApi.update(id, { status })
+      await ordersApi.update(id, { status }, token)
       toast.success('Status updated')
       load()
       if (selected?.id === id) setSelected({ ...selected, status })
