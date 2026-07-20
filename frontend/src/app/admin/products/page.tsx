@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-
+import { useAdmin } from '@/store/admin'
 import { productsApi, categoriesApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
@@ -9,7 +9,7 @@ import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
 const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
 
 export default function AdminProductsPage() {
-  
+  const { token } = useAdmin()
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,14 +40,14 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    if (!token) return
     try {
       const body = { ...form, price: parseFloat(form.price), compare_price: form.compare_price ? parseFloat(form.compare_price) : null, category_id: parseInt(form.category_id) || null }
       if (editing) {
-        await productsApi.update(editing.id, body)
+        await productsApi.update(editing.id, body, token)
         toast.success('Product updated')
       } else {
-        await productsApi.create(body)
+        await productsApi.create(body, token)
         toast.success('Product created')
       }
       setShowForm(false)
@@ -57,8 +57,8 @@ export default function AdminProductsPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this product?')) return
-    
-    try { await productsApi.delete(id); toast.success('Deleted'); load() }
+    if (!token) return
+    try { await productsApi.delete(id, token); toast.success('Deleted'); load() }
     catch { toast.error('Failed to delete') }
   }
 
