@@ -114,14 +114,14 @@ create policy "Administrators have full access to payment records" on public.pay
 -- 4. Set missing defaults & updated_at triggers
 -------------------------------------------------------------------------------
 
-create trigger update_carts_updated_at
+create trigger set_carts_updated_at
   before update on public.carts
-  for each row execute function update_updated_at_column();
+  for each row execute function private.set_updated_at();
 
-create trigger update_cart_items_updated_at
+create trigger set_cart_items_updated_at
   before update on public.cart_items
-  for each row execute function update_updated_at_column();
+  for each row execute function private.set_updated_at();
 
-create trigger update_payment_records_updated_at
+create trigger set_payment_records_updated_at
   before update on public.payment_records
-  for each row execute function update_updated_at_column();
+  for each row execute function private.set_updated_at();
