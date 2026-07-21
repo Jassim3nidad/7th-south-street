@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { currentDrop } from "../data/mock-store";
+import { currentDrop } from "@/lib/mock-store";
 
 export default function CampaignSection() {
   return (
@@ -7,7 +7,7 @@ export default function CampaignSection() {
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 px-4 md:flex-row lg:px-8">
         <div className="flex-1 w-full relative overflow-hidden rounded-sm group">
           <img 
-            src={currentDrop.image} 
+            src={currentDrop.imageUrl} 
             alt={currentDrop.title} 
             className="w-full h-[500px] object-cover transition-transform duration-700 group-hover:scale-105 grayscale hover:grayscale-0"
           />
