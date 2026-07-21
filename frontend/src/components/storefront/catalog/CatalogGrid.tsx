@@ -1,4 +1,4 @@
-import { CatalogProduct } from "../../data/catalog-queries";
+import { CatalogProduct } from "@/lib/catalog-queries";
 import ProductCard from "./ProductCard";
 
 export default function CatalogGrid({ products }: { products: CatalogProduct[] }) {
