@@ -1,19 +1,46 @@
 'use client'
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/store/cart'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useDismissibleLayer } from '@/hooks/useDismissibleLayer'
+import { validateCartItems } from '@/app/actions/cart'
+import toast from 'react-hot-toast'
 
 export default function CartDrawer() {
-  const { items, isOpen, toggleCart, removeItem, updateQty, total, count } = useCart()
+  const { items, isOpen, toggleCart, removeItem, updateQty, total, count, isHydrated, setValidatedItems } = useCart()
   const drawerRef = useRef<HTMLDivElement>(null)
+  const [isValidating, setIsValidating] = useState(false)
+  const [conflicts, setConflicts] = useState<string[]>([])
 
   useDismissibleLayer(isOpen, toggleCart, drawerRef)
 
+  useEffect(() => {
+    if (isOpen && isHydrated && items.length > 0) {
+      const validate = async () => {
+        setIsValidating(true)
+        setConflicts([])
+        try {
+          const res = await validateCartItems(items)
+          if (res.conflicts.length > 0) {
+            setConflicts(res.conflicts)
+          }
+          setValidatedItems(res.validItems)
+        } catch (error) {
+          console.error("Cart validation error:", error)
+        } finally {
+          setIsValidating(false)
+        }
+      }
+      validate()
+    }
+  }, [isOpen, isHydrated]) // deliberately not adding items to avoid loop
+
   const fmt = (n: number) =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
+
+  if (!isHydrated) return null
 
   return (
     <AnimatePresence>
@@ -58,8 +85,28 @@ export default function CartDrawer() {
               </button>
             </div>
 
+            {/* Conflicts */}
+            {conflicts.length > 0 && (
+              <div className="bg-[#E63B2E]/10 border-b border-[#E63B2E]/20 p-4 px-6 space-y-1">
+                {conflicts.map((conflict, i) => (
+                  <p key={i} className="text-[#E63B2E] text-xs flex items-start gap-2">
+                    <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{conflict}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+
             {/* Items */}
             <div className="cart-drawer__items flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {isValidating && items.length > 0 && (
+                <div className="absolute inset-0 bg-[#080808]/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin" />
+                </div>
+              )}
+              
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                   <div className="neo-inset w-16 h-16 flex items-center justify-center">
@@ -143,20 +190,23 @@ export default function CartDrawer() {
                   <span className="text-white/50 text-xs tracking-widest uppercase">Subtotal</span>
                   <span className="text-white text-base font-medium">{fmt(total())}</span>
                 </div>
-                <p className="text-white/20 text-xs">Shipping calculated at checkout</p>
-                <Link
-                  href="/checkout"
-                  onClick={toggleCart}
-                  className="btn-primary w-full"
-                >
-                  Checkout
-                </Link>
-                <button
-                  onClick={toggleCart}
-                  className="btn-ghost w-full"
-                >
-                  Continue Shopping
-                </button>
+                <p className="text-white/20 text-xs text-center">Shipping & taxes calculated at checkout</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/cart"
+                    onClick={toggleCart}
+                    className="btn-ghost w-full"
+                  >
+                    View Cart
+                  </Link>
+                  <Link
+                    href="/checkout"
+                    onClick={toggleCart}
+                    className="btn-primary w-full"
+                  >
+                    Checkout
+                  </Link>
+                </div>
               </div>
             )}
           </motion.div>
@@ -165,3 +215,4 @@ export default function CartDrawer() {
     </AnimatePresence>
   )
 }
+

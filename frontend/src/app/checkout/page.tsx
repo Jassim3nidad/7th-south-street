@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { useCart } from '@/store/cart'
 import { ordersApi } from '@/lib/api'
+import { validateCartItems } from '@/app/actions/cart'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 
@@ -19,6 +20,30 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [idempotencyKey] = useState(() => crypto.randomUUID())
   const [form, setForm] = useState({ first_name:'', last_name:'', email:'', phone:'', address:'', city:'', province:'', postal:'', payment_method:'cod', notes:'' })
+  const [isValidating, setIsValidating] = useState(true)
+  const [cartError, setCartError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setIsValidating(false)
+      return
+    }
+    const validate = async () => {
+      setIsValidating(true)
+      try {
+        const res = await validateCartItems(items)
+        if (res.conflicts.length > 0) {
+          setCartError('Your cart has issues that need to be resolved before checkout.')
+          toast.error("Please review your cart items.")
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setIsValidating(false)
+      }
+    }
+    validate()
+  }, []) // validate once on load
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -27,8 +52,20 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) { toast.error('Your cart is empty'); return }
+    if (cartError) { toast.error(cartError); return }
+    
     setLoading(true)
     try {
+      // Re-validate strictly before final submission
+      const validationRes = await validateCartItems(items)
+      if (validationRes.conflicts.length > 0) {
+        toast.error("Cart items changed! Please review your cart before checking out.")
+        setCartError("Please review your cart items.")
+        setLoading(false)
+        router.push('/cart')
+        return
+      }
+
       const orderItems = items.map(item => ({ variant_id: item.variant_id, quantity: item.quantity }))
       const res: any = await ordersApi.create({
         idempotency_key: idempotencyKey,
