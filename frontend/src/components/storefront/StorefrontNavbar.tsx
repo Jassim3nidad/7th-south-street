@@ -14,7 +14,7 @@ export default function StorefrontNavbar() {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUser(data.user);
     });
-  }, []);
+  }, [supabase.auth]);
 
   const isAdmin = false; // Simplified for now
   const isAuthenticated = Boolean(currentUser);
