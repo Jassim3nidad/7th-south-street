@@ -41,7 +41,7 @@ begin
       select variant_id, quantity
       from public.order_items
       where order_id = p_order_id and variant_id is not null
-      order by id
+      order by variant_id
     loop
       update public.product_variants
       set stock_quantity = stock_quantity + v_item.quantity
