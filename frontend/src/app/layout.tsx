@@ -3,6 +3,8 @@ import { Cormorant_Garamond, DM_Sans, DM_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { getThemeInitScript, themeMetaColors } from '@/lib/theme'
+import StorefrontNavbar from '@/components/storefront/StorefrontNavbar'
+import StorefrontFooter from '@/components/storefront/StorefrontFooter'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -68,7 +70,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ fontFamily: 'var(--font-body), DM Sans, system-ui, sans-serif' }}
       >
         <ThemeProvider>
-          {children}
+          <div className="flex min-h-screen w-full flex-col bg-brand-950">
+            <StorefrontNavbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <StorefrontFooter />
+          </div>
           <Toaster
             position="bottom-right"
             toastOptions={{
