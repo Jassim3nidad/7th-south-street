@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CatalogCategory, ProductAvailability } from "../../data/catalog-queries";
+import { CatalogCategory, ProductAvailability } from "@/lib/catalog-queries";
 
 interface CatalogSidebarProps {
   categories: CatalogCategory[];
