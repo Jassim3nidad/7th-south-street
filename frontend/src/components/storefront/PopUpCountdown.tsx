@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { popUpEvent } from "../data/mock-store";
+import { popUpEvent } from "@/lib/mock-store";
 import { MapPin } from "lucide-react";
 
 export default function PopUpCountdown() {
@@ -39,7 +39,7 @@ export default function PopUpCountdown() {
     <section className="w-full bg-border py-16">
       <div className="mx-auto flex max-w-5xl flex-col items-center text-center px-4">
         <h3 className="font-display text-2xl font-black uppercase tracking-widest text-text-primary mb-2">
-          {popUpEvent.name}
+          {popUpEvent.title}
         </h3>
         <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-text-secondary mb-6">
           <MapPin className="h-4 w-4" /> {popUpEvent.location}
