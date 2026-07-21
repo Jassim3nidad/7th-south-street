@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CatalogProduct } from "../../data/catalog-queries";
+import { CatalogProduct } from "@/lib/catalog-queries";
 
 export default function ProductCard({ product }: { product: CatalogProduct }) {
   const isAvailable = product.availability === "available";
