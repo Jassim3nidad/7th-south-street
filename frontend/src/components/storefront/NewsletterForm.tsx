@@ -1,3 +1,5 @@
+"use client";
+
 export default function NewsletterForm() {
   return (
     <section className="w-full bg-base py-24 border-t border-border">
