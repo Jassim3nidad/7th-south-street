@@ -59,6 +59,8 @@ export async function POST(request: Request) {
       items.push({ variant_id: variantId, quantity })
     }
 
+    const idempotencyKey = body.idempotency_key || randomUUID()
+
     const { data, error } = await supabase.rpc('create_order', {
       p_items: items,
       p_customer_information: {
@@ -78,11 +80,11 @@ export async function POST(request: Request) {
       },
       p_payment_method: body.payment_method || 'cod',
       p_notes: body.notes || null,
-      p_idempotency_key: body.idempotency_key || randomUUID(),
+      p_idempotency_key: idempotencyKey,
     })
     if (error) throw error
 
-    return success(data, 'Order placed', 201)
+    return success({ ...(data as Record<string, unknown>), tracking_key: idempotencyKey }, 'Order placed', 201)
   } catch (error) {
     return handleRouteError(error, 'Unable to place order')
   }

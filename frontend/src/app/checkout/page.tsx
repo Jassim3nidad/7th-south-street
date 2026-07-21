@@ -117,7 +117,7 @@ export default function CheckoutPage() {
       })
       clearCart() // Only clear on successful order creation
       toast.success('Order placed!')
-      router.push(`/order-confirmation?order=${res.data.order_number}`)
+      router.push(`/order-confirmation?order=${res.data.order_number}&key=${res.data.tracking_key}`)
     } catch (err: any) {
       toast.error(err.message || 'Failed to place order')
     } finally {
