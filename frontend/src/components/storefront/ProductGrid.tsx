@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { featuredProducts } from "../data/mock-store";
+import { featuredProducts } from "@/lib/mock-store";
 
 export default function ProductGrid() {
   return (
@@ -22,8 +22,8 @@ export default function ProductGrid() {
             <Link key={product.id} href={`/products/${product.id}`} className="group flex flex-col">
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-sm bg-border">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={product.imageUrl}
+                  alt={product.title}
                   className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
                 {product.isNew && (
@@ -42,10 +42,10 @@ export default function ProductGrid() {
                   {product.category}
                 </p>
                 <h3 className="text-sm font-bold text-text-primary mb-2">
-                  {product.name}
+                  {product.title}
                 </h3>
                 <p className="font-display font-bold text-brand-500">
-                  {product.price}
+                  ₱{product.basePrice}
                 </p>
               </div>
             </Link>
