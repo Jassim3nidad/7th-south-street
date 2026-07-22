@@ -6,9 +6,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { useCart } from "@/store/cart"
 import toast from "react-hot-toast"
-import Navbar from "@/components/layout/Navbar"
-import Footer from "@/components/layout/Footer"
-import CartDrawer from "@/components/layout/CartDrawer"
 import ProductCard from "./ProductCard"
 import WishlistToggle from "@/components/account/WishlistToggle"
 
@@ -97,9 +94,6 @@ export default function ProductDetailClient({ product, initialSaved, relatedProd
 
   return (
     <main className="site-shell">
-      <Navbar />
-      <CartDrawer />
-
       <div className="site-container detail-layout pb-24">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
           <div className="space-y-3">
@@ -289,8 +283,6 @@ export default function ProductDetailClient({ product, initialSaved, relatedProd
           </motion.div>
         )}
       </AnimatePresence>
-
-      <Footer />
 
       <AnimatePresence>
         {showSizeGuide && (
