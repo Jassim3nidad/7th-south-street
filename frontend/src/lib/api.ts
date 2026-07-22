@@ -108,6 +108,17 @@ export const dashboardApi = {
     const qs = params.toString() ? `?${params.toString()}` : ''
     return apiFetch<any>(`/dashboard/stats${qs}`, { token })
   },
+  exportCsv: async (token: string, from?: string, to?: string) => {
+    const params = new URLSearchParams()
+    if (from) params.append('from', from)
+    if (to) params.append('to', to)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    const res = await fetch(`/api/dashboard/export${qs}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (!res.ok) throw new Error('Failed to export CSV')
+    return res.blob()
+  }
 }
 
 // ── Newsletter ───────────────────────────────────────────────
