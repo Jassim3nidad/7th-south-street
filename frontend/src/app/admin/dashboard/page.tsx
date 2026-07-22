@@ -74,11 +74,45 @@ export default function DashboardPage() {
       .finally(() => setLoading(false))
   }, [token, dateRange])
 
+  const handleExport = async () => {
+    if (!token) return
+    const loadingToast = (await import('react-hot-toast')).toast.loading('Exporting data...')
+    try {
+      const blob = await dashboardApi.exportCsv(token, dateRange === 'all' ? undefined : undefined, undefined) // Wait, dateRange needs proper from/to logic
+      // Let's re-calculate from/to based on dateRange
+      let from: string | undefined
+      let to: string | undefined
+      const now = new Date()
+      if (dateRange === '7d') {
+        const d = new Date(); d.setDate(d.getDate() - 7); from = d.toISOString();
+      } else if (dateRange === '30d') {
+        const d = new Date(); d.setDate(d.getDate() - 30); from = d.toISOString();
+      } else if (dateRange === 'ytd') {
+        const d = new Date(now.getFullYear(), 0, 1); from = d.toISOString();
+      }
+
+      const blobRes = await dashboardApi.exportCsv(token, from, to)
+      const url = window.URL.createObjectURL(blobRes)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `7ss-export-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      a.remove()
+      ;(await import('react-hot-toast')).toast.success('Export downloaded!', { id: loadingToast })
+    } catch (err: any) {
+      ;(await import('react-hot-toast')).toast.error(err.message || 'Failed to export', { id: loadingToast })
+    }
+  }
+
   const overview = data?.overview || {}
   const recentOrders = data?.recent_orders || []
   const lowStock = data?.low_stock || []
   const salesByMonth = data?.sales_by_month || []
   const topProducts = data?.top_products || []
+  const topVariants = data?.top_variants || []
+  const sellThrough = data?.sell_through || []
   const upcomingEvents = data?.upcoming_events || []
 
   const statusColors: Record<string, string> = { pending: 'text-yellow-400', confirmed: 'text-blue-400', processing: 'text-purple-400', shipped: 'text-cyan-400', delivered: 'text-green-400', cancelled: 'text-red-400', refunded: 'text-pink-400' }
@@ -92,43 +126,44 @@ export default function DashboardPage() {
           <h1 className="admin-page-title">The Vault</h1></div>
         </div>
         
-        <div className="flex bg-white/5 p-1 rounded-lg border border-white/10 w-full md:w-auto overflow-x-auto no-scrollbar">
-          {[
-            { id: '7d', label: '7 Days' },
-            { id: '30d', label: '30 Days' },
-            { id: 'ytd', label: 'This Year' },
-            { id: 'all', label: 'All Time' }
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setDateRange(f.id)}
-              className={`px-4 py-1.5 text-xs tracking-wider uppercase whitespace-nowrap transition-colors rounded-md ${dateRange === f.id ? 'bg-[#C9A96E] text-black font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button onClick={handleExport} className="neo-btn px-4 py-1.5 text-xs">
+            Export CSV
+          </button>
+          <div className="flex bg-white/5 p-1 rounded-lg border border-white/10 overflow-x-auto no-scrollbar">
+            {[
+              { id: '7d', label: '7 Days' },
+              { id: '30d', label: '30 Days' },
+              { id: 'ytd', label: 'This Year' },
+              { id: 'all', label: 'All Time' }
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setDateRange(f.id)}
+                className={`px-4 py-1.5 text-xs tracking-wider uppercase whitespace-nowrap transition-colors rounded-md ${dateRange === f.id ? 'bg-[#C9A96E] text-black font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+      {/* Stats - 2 Rows */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {loading ? (
-          <>
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </>
+          Array.from({length: 8}).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard label="Total Revenue" value={fmt(overview.total_revenue || 0)} accent />
-            <StatCard label="Orders" value={String(overview.total_orders || 0)} />
-            <StatCard label="Pending Orders" value={
-              <span className="text-yellow-400">{overview.pending_orders || 0}</span>
-            } />
-            <StatCard label="Customers" value={String(overview.total_customers || 0)} />
-            <StatCard label="Products" value={String(overview.total_products || 0)} />
+            <StatCard label="Gross Sales" value={fmt(overview.gross_sales || 0)} sub={`${overview.total_orders || 0} valid orders`} />
+            <StatCard label="Net Sales" value={fmt(overview.net_sales || 0)} accent sub="Paid, not refunded" />
+            <StatCard label="AOV" value={fmt(overview.average_order_value || 0)} sub="Average Order Value" />
+            <StatCard label="Paid Orders" value={String(overview.paid_orders || 0)} />
+            
+            <StatCard label="New Customers" value={String(overview.new_customers || 0)} />
+            <StatCard label="Returning Cust." value={String(overview.returning_customers || 0)} sub=">1 paid order" />
+            <StatCard label="RSVP Activity" value={String(overview.rsvp_activity || 0)} />
+            <StatCard label="New Subscribers" value={String(overview.newsletter_growth || 0)} sub="Newsletter" />
           </>
         )}
       </div>
@@ -175,6 +210,54 @@ export default function DashboardPage() {
                     <p className="text-white/40 text-[10px] mt-1">{p.sold} sold</p>
                   </div>
                   <p className="text-[#C9A96E] text-xs font-mono">{fmt(p.revenue || 0)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        {/* Top Variants */}
+        <div className="admin-card p-6 flex flex-col">
+          <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Top Variants</p>
+          {loading ? (
+            <div className="space-y-4 flex-1">
+              {[1, 2, 3].map(i => <div key={i} className="h-10 bg-white/5 rounded animate-pulse"></div>)}
+            </div>
+          ) : (
+            <div className="space-y-4 flex-1">
+              {topVariants.length === 0 && <div className="h-full flex items-center justify-center text-white/15 text-sm">No sales yet</div>}
+              {topVariants.map((v: any, i: number) => (
+                <div key={i} className="flex items-center justify-between gap-2 p-2 -mx-2 hover:bg-white/5 rounded transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-white/80 text-xs truncate font-medium">{v.name}</p>
+                    <p className="text-white/40 text-[10px] mt-1">{v.size || 'N/A'}{v.color ? ` • ${v.color}` : ''}</p>
+                  </div>
+                  <p className="text-[#C9A96E] text-xs font-mono">{v.sold} sold</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sell Through */}
+        <div className="admin-card p-6 flex flex-col">
+          <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Highest Sell-Through</p>
+          {loading ? (
+            <div className="space-y-4 flex-1">
+              {[1, 2, 3].map(i => <div key={i} className="h-10 bg-white/5 rounded animate-pulse"></div>)}
+            </div>
+          ) : (
+            <div className="space-y-4 flex-1">
+              {sellThrough.length === 0 && <div className="h-full flex items-center justify-center text-white/15 text-sm">No data</div>}
+              {sellThrough.map((st: any, i: number) => (
+                <div key={i} className="flex items-center justify-between gap-2 p-2 -mx-2 hover:bg-white/5 rounded transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-white/80 text-xs truncate font-medium">{st.name}</p>
+                    <p className="text-white/40 text-[10px] mt-1">{st.sold} sold / {st.stock} remaining</p>
+                  </div>
+                  <p className="text-[#C9A96E] text-xs font-mono">{Math.round(st.sell_through_rate * 100)}%</p>
                 </div>
               ))}
             </div>
