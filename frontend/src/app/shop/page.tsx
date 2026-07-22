@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-import CatalogSkeleton from "@/components/storefront/catalog/CatalogSkeleton";
 import CatalogGrid from "@/components/storefront/catalog/CatalogGrid";
 import CatalogSidebar from "@/components/storefront/catalog/CatalogSidebar";
 import CatalogSort from "@/components/storefront/catalog/CatalogSort";
@@ -49,36 +47,38 @@ export default async function ShopPage(props: {
   }
 
   return (
-    <div className="w-full flex-1 bg-base">
-      <div className="mx-auto w-full max-w-7xl px-4 py-12 lg:px-8">
-        <div className="mb-12 flex flex-col justify-between gap-6 border-b border-border pb-6 md:flex-row md:items-end">
+    <main className="site-shell">
+      <header className="page-header site-container neo-surface-sm" aria-labelledby="catalog-heading">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <h1 className="font-display text-4xl font-black uppercase tracking-widest text-text-primary md:text-5xl">
+            <h1 id="catalog-heading" className="neo-heading">
               The Archive
             </h1>
-            <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em] text-text-secondary">
+            <p className="neo-kicker mt-3">
               Premium Streetwear Catalog
             </p>
           </div>
           <CatalogSort />
         </div>
+      </header>
 
-        <div className="flex flex-col gap-12 md:flex-row">
+      <div className="site-container page-content">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
           <CatalogSidebar 
             categories={categories || []} 
             currentCategory={category} 
             currentAvailability={availability} 
           />
           
-          <div className="flex-1">
+          <section className="min-w-0 flex-1" aria-label="Product catalog">
             {(!products || products.length === 0) ? (
               <CatalogEmptyState />
             ) : (
               <CatalogGrid products={products} />
             )}
-          </div>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
