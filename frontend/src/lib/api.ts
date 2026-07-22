@@ -115,8 +115,18 @@ export const newsletterApi = {
 
 // ── Inventory ────────────────────────────────────────────────
 export const inventoryApi = {
-  list: (token: string, lowStock?: boolean) =>
-    apiFetch<any>(`/inventory${lowStock ? '?low_stock=1' : ''}`, { token }),
-  update: (id: number, stock: number, token: string) =>
-    apiFetch<any>(`/inventory/${id}`, { method: 'PUT', body: { stock_quantity: stock }, token }),
+  list: (token: string, search?: string, lowStock?: boolean) => {
+    const params = new URLSearchParams()
+    if (search) params.append('search', search)
+    if (lowStock) params.append('low_stock', '1')
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    return apiFetch<any>(`/inventory${qs}`, { token })
+  },
+  update: (id: number, payload: { stock_quantity: number, reason: string, low_stock_threshold?: number }, token: string) =>
+    apiFetch<any>(`/inventory/${id}`, { method: 'PUT', body: payload, token }),
+  getMovements: (token: string, variantId?: number, page: number = 1) => {
+    const params = new URLSearchParams({ page: String(page), per_page: '20' })
+    if (variantId) params.append('variant_id', String(variantId))
+    return apiFetch<any>(`/inventory/movements?${params.toString()}`, { token })
+  },
 }

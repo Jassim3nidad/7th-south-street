@@ -11,10 +11,19 @@ export async function PUT(request: Request, { params }: RouteContext) {
     const body = await request.json()
     const stock = Number(body?.stock_quantity)
     if (!Number.isInteger(stock) || stock < 0) return failure('Stock must be a non-negative integer')
+    
+    if (typeof body.low_stock_threshold === 'number' && body.low_stock_threshold >= 0) {
+      await supabase.from('product_variants')
+        .update({ low_stock_threshold: body.low_stock_threshold })
+        .eq('id', Number(id))
+    }
+
+    const reason = typeof body.reason === 'string' && body.reason.trim() !== '' ? body.reason : 'Manual adjustment'
+
     const { data, error } = await supabase.rpc('admin_adjust_inventory', {
       p_variant_id: Number(id),
       p_stock_quantity: stock,
-      p_reason: 'Admin inventory update',
+      p_reason: reason,
     })
     if (error) throw error
     return success({ stock_quantity: data }, 'Stock updated')

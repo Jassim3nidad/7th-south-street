@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const { data, error } = await query
     if (error) throw error
 
-    const items = (data ?? []).map((item) => {
+    let items = (data ?? []).map((item) => {
       const product = Array.isArray(item.products) ? item.products[0] : item.products
       return {
         ...item,
@@ -24,6 +24,11 @@ export async function GET(request: Request) {
         product_sku: item.sku,
       }
     })
+    
+    const search = searchParams.get('search')?.toLowerCase()
+    if (search) {
+      items = items.filter(i => i.product_name.toLowerCase().includes(search) || i.product_sku.toLowerCase().includes(search))
+    }
     const filtered = searchParams.has('low_stock')
       ? items.filter((item) => item.stock_quantity <= item.low_stock_threshold)
       : items
