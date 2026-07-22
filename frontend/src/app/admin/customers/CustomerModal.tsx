@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAdmin } from '@/store/admin'
 import { customersApi } from '@/lib/api'
 
@@ -25,28 +25,40 @@ export function CustomerModal({
   const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(n)
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="theme-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        className="neo-modal w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Customer details${customer?.email ? ` for ${customer.email}` : ''}`}
+        aria-busy={loading}
+      >
         
         {loading || !profile ? (
-          <div className="p-12 flex justify-center"><div className="w-8 h-8 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center p-12" role="status" aria-live="polite">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-accent border-t-transparent" aria-hidden="true" />
+            <span className="sr-only">Loading customer details</span>
+          </div>
         ) : (
           <>
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-start justify-between gap-4 border-b border-border p-6 sm:items-center">
               <div>
-                <h2 className="text-xl font-light text-[#C9A96E]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+                <h2 className="font-display text-2xl font-medium text-text-primary">
                   {profile.first_name} {profile.last_name}
                 </h2>
-                <div className="flex items-center gap-3 mt-1">
-                  <p className="text-white/60 text-xs font-mono">{profile.email}</p>
-                  <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${profile.is_registered ? 'bg-[#C9A96E]/10 border-[#C9A96E]/30 text-[#C9A96E]' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="min-w-0 break-all font-mono text-xs text-text-secondary">{profile.email}</p>
+                  <span className={`order-status-badge ${profile.is_registered ? 'status-confirmed' : ''}`}>
                     {profile.is_registered ? 'Registered' : 'Guest'}
                   </span>
-                  {profile.is_subscribed && <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border bg-blue-500/10 border-blue-500/30 text-blue-400">Newsletter</span>}
+                  {profile.is_subscribed && <span className="order-status-badge status-shipped">Newsletter</span>}
                 </div>
               </div>
-              <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={onClose} className="btn-ghost modal-close-button shrink-0 p-0" aria-label="Close customer dialog">
+                <svg className="h-5 w-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
@@ -54,20 +66,20 @@ export function CustomerModal({
               
               {/* Order History */}
               <div className="admin-card p-5">
-                <h3 className="text-xs tracking-widest uppercase text-white/50 mb-4 border-b border-white/5 pb-2">Order History</h3>
+                <h3 className="mb-4 border-b border-border pb-2 text-xs uppercase tracking-widest text-text-secondary">Order History</h3>
                 {profile.orders.length === 0 ? (
-                  <p className="text-white/30 text-xs py-4 text-center">No orders found.</p>
+                  <p className="py-4 text-center text-xs text-text-muted">No orders found.</p>
                 ) : (
                   <div className="space-y-3">
                     {profile.orders.map((o: any) => (
-                      <div key={o.id} className="flex justify-between items-center bg-white/[0.02] p-3 rounded border border-white/5">
+                      <div key={o.id} className="neo-inset flex items-center justify-between gap-3 p-3">
                         <div>
-                          <p className="text-sm font-mono text-[#C9A96E]">{o.order_number}</p>
-                          <p className="text-[10px] text-white/40">{new Date(o.created_at).toLocaleDateString('en-PH')}</p>
+                          <p className="font-mono text-sm text-brand-accent">{o.order_number}</p>
+                          <p className="text-[10px] text-text-muted">{new Date(o.created_at).toLocaleDateString('en-PH')}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-white/80">{fmt(o.total)}</p>
-                          <p className="text-[10px] uppercase tracking-wider text-white/50">{o.status} • {o.payment_status}</p>
+                          <p className="text-sm text-text-primary">{fmt(o.total)}</p>
+                          <p className="text-[10px] uppercase tracking-wider text-text-secondary">{o.status} • {o.payment_status}</p>
                         </div>
                       </div>
                     ))}
@@ -77,21 +89,21 @@ export function CustomerModal({
 
               {/* RSVP History */}
               <div className="admin-card p-5">
-                <h3 className="text-xs tracking-widest uppercase text-white/50 mb-4 border-b border-white/5 pb-2">Event RSVPs</h3>
+                <h3 className="mb-4 border-b border-border pb-2 text-xs uppercase tracking-widest text-text-secondary">Event RSVPs</h3>
                 {profile.rsvps.length === 0 ? (
-                  <p className="text-white/30 text-xs py-4 text-center">No RSVPs found.</p>
+                  <p className="py-4 text-center text-xs text-text-muted">No RSVPs found.</p>
                 ) : (
                   <div className="space-y-3">
                     {profile.rsvps.map((r: any) => (
-                      <div key={r.id} className="bg-white/[0.02] p-3 rounded border border-white/5">
+                      <div key={r.id} className="neo-inset p-3">
                         <div className="flex justify-between items-start mb-1">
-                          <p className="text-sm text-white/80 font-medium">{r.event_title}</p>
-                          <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-white/10 ${r.event_status === 'past' ? 'text-white/30' : 'text-green-400'}`}>
+                          <p className="text-sm font-medium text-text-primary">{r.event_title}</p>
+                          <span className={`order-status-badge ${r.event_status === 'past' ? '' : 'status-delivered'}`}>
                             {r.event_status}
                           </span>
                         </div>
-                        <p className="text-[10px] text-white/40">Event Date: {new Date(r.event_date).toLocaleDateString('en-PH')}</p>
-                        <p className="text-[10px] text-white/30 mt-1">RSVPed: {new Date(r.created_at).toLocaleDateString('en-PH')}</p>
+                        <p className="text-[10px] text-text-secondary">Event Date: {new Date(r.event_date).toLocaleDateString('en-PH')}</p>
+                        <p className="mt-1 text-[10px] text-text-muted">RSVPed: {new Date(r.created_at).toLocaleDateString('en-PH')}</p>
                       </div>
                     ))}
                   </div>
