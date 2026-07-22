@@ -131,10 +131,39 @@ export default function OrderDetails({ order, isImmediateConfirmation = false }:
             <h3 className="text-white/60 uppercase tracking-widest text-xs">Payment</h3>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-sm uppercase tracking-wider">{order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}</p>
+                <p className="text-white text-sm uppercase tracking-wider">{order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method.replace('_', ' ')}</p>
                 <p className="text-white/40 text-xs mt-1 capitalize">Status: {order.payment_status}</p>
               </div>
             </div>
+            
+            {order.payment_status === 'unpaid' && !isTerminalFailure && (
+              <div className="pt-4 border-t border-white/5 space-y-3">
+                <p className="text-white/80 text-sm font-medium">Payment Instructions</p>
+                {order.payment_method === 'gcash' && (
+                  <div className="text-sm text-white/60 leading-relaxed bg-white/5 p-4 rounded">
+                    <p>1. Open GCash and send <strong>₱{order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> to:</p>
+                    <p className="font-mono text-white mt-1 mb-2">0917-123-4567 (7TH SOUTH STREET)</p>
+                    <p>2. Take a screenshot of the successful transfer.</p>
+                    <p>3. Reply to your order confirmation email with the screenshot attached.</p>
+                  </div>
+                )}
+                {order.payment_method === 'bank_transfer' && (
+                  <div className="text-sm text-white/60 leading-relaxed bg-white/5 p-4 rounded">
+                    <p>1. Transfer <strong>₱{order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> to our BDO Account:</p>
+                    <p className="font-mono text-white mt-1">Bank: BDO Unibank</p>
+                    <p className="font-mono text-white">Account Name: 7TH SOUTH STREET</p>
+                    <p className="font-mono text-white mb-2">Account Number: 1234567890</p>
+                    <p>2. Take a screenshot of the deposit slip or successful transfer screen.</p>
+                    <p>3. Reply to your order confirmation email with the screenshot attached.</p>
+                  </div>
+                )}
+                {order.payment_method === 'cod' && (
+                  <div className="text-sm text-white/60 leading-relaxed bg-white/5 p-4 rounded">
+                    <p>Please prepare the exact amount of <strong>₱{order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> for the courier upon delivery.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

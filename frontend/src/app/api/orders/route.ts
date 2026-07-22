@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import { failure, handleRouteError, success } from '@/lib/http'
 import { requireAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { processPayment } from '@/lib/payments'
 import type { Database } from '@/types/database'
 
 type OrderStatus = Database['public']['Enums']['order_status']
@@ -116,7 +117,15 @@ export async function POST(request: Request) {
       }).catch(err => console.error('Email trigger failed:', err))
     }
 
-    return success({ ...(data as Record<string, unknown>), tracking_key: idempotencyKey }, 'Order placed', 201)
+    // Call payment abstraction
+    const paymentResult = await processPayment(orderData, body.payment_method || 'cod')
+    
+    // Return structured payload that the frontend checkout can interpret
+    return success({ 
+      ...paymentResult,
+      tracking_key: idempotencyKey,
+      order_number: orderData?.order_number
+    }, 'Order placed', 201)
   } catch (error) {
     return handleRouteError(error, 'Unable to place order')
   }
