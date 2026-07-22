@@ -7,13 +7,13 @@ import NewsletterForm from "@/components/storefront/NewsletterForm";
 
 export default function MarketingHomePage() {
   return (
-    <>
+    <main className="site-shell">
       <HeroSection />
       <CampaignSection />
       <PopUpCountdown />
       <ProductGrid />
       <BrandStory />
       <NewsletterForm />
-    </>
+    </main>
   );
 }
