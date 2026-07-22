@@ -3,8 +3,7 @@ import { Cormorant_Garamond, DM_Sans, DM_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { getThemeInitScript, themeMetaColors } from '@/lib/theme'
-import StorefrontNavbar from '@/components/storefront/StorefrontNavbar'
-import StorefrontFooter from '@/components/storefront/StorefrontFooter'
+import SiteChrome from '@/components/layout/SiteChrome'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -64,19 +63,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="theme-color" content={themeMetaColors.light} />
         <script id="theme-init" dangerouslySetInnerHTML={{ __html: getThemeInitScript() }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "7Th South Street",
+              "url": "https://7thsouthstreet.com",
+              "logo": "https://7thsouthstreet.com/logo.png",
+              "description": "Premium underground streetwear. Minimalist. Dark. Unapologetic.",
+              "sameAs": [
+                "https://instagram.com/7thsouthstreet"
+              ]
+            })
+          }}
+        />
       </head>
       <body
         className="antialiased"
         style={{ fontFamily: 'var(--font-body), DM Sans, system-ui, sans-serif' }}
       >
         <ThemeProvider>
-          <div className="flex min-h-screen w-full flex-col bg-brand-950">
-            <StorefrontNavbar />
-            <main className="flex-1">
-              {children}
-            </main>
-            <StorefrontFooter />
-          </div>
+          <SiteChrome>{children}</SiteChrome>
           <Toaster
             position="bottom-right"
             toastOptions={{
