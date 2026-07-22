@@ -38,9 +38,25 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     const { id } = await params
     const { supabase } = await requireAdmin()
     if (!/^\d+$/.test(id)) return failure('Product not found', 404)
+
+    const productId = Number(id)
+    
+    // 1. Fetch images to delete from Storage
+    const { data: images } = await supabase
+      .from('product_images')
+      .select('object_path')
+      .eq('product_id', productId)
+      
+    if (images && images.length > 0) {
+      const paths = images.map(img => img.object_path)
+      await supabase.storage.from('product-images').remove(paths)
+    }
+
+    // 2. Delete the product (cascades to product_images table)
     const { error } = await supabase.rpc('admin_delete_product', {
-      p_product_id: Number(id),
+      p_product_id: productId,
     })
+    
     if (error) throw error
     return success(null, 'Product deleted')
   } catch (error) {

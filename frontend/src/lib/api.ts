@@ -37,6 +37,21 @@ export const productsApi = {
     apiFetch<any>(`/products/${id}`, { method: 'PUT', body, token }),
   delete: (id: number, token: string) =>
     apiFetch<any>(`/products/${id}`, { method: 'DELETE', token }),
+  uploadImage: (productId: number, file: File, isPrimary: boolean = false) => {
+    const formData = new FormData()
+    formData.append('product_id', String(productId))
+    formData.append('image', file)
+    formData.append('is_primary', String(isPrimary))
+    return fetch('/api/upload', { method: 'POST', body: formData }).then(async r => {
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.message || 'API error')
+      return data
+    })
+  },
+  deleteImage: (objectPath: string, token: string) =>
+    apiFetch<any>('/upload', { method: 'DELETE', body: { object_path: objectPath }, token }),
+  reorderImages: (productId: number, imageIds: number[], token: string) =>
+    apiFetch<any>(`/products/${productId}/images/reorder`, { method: 'PUT', body: { image_ids: imageIds }, token }),
 }
 
 // ── Categories ───────────────────────────────────────────────

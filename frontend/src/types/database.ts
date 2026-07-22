@@ -840,6 +840,13 @@ export type Database = {
         Args: { p_product_id: number }
         Returns: undefined
       }
+      admin_reorder_product_images: {
+        Args: {
+          p_product_id: number
+          p_image_ids: number[]
+        }
+        Returns: undefined
+      }
       admin_save_product: {
         Args: { p_product: Json; p_product_id: number }
         Returns: Json
