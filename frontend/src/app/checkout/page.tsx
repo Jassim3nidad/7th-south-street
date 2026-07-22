@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import Navbar from '@/components/layout/Navbar'
-import Footer from '@/components/layout/Footer'
 import { useCart } from '@/store/cart'
 import { ordersApi } from '@/lib/api'
 import { validateCartItems } from '@/app/actions/cart'
@@ -133,9 +131,8 @@ export default function CheckoutPage() {
 
   if (items.length === 0) return (
     <main className="site-shell">
-      <Navbar />
       <div className="neo-state max-w-xl mx-auto mt-40 flex flex-col items-center justify-center gap-6 text-center px-6 py-20">
-        <p className="text-white/20 text-2xl font-light" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Your cart is empty</p>
+        <h1 className="neo-heading text-3xl">Your cart is empty</h1>
         <button onClick={() => router.push('/shop')} className="btn-primary text-xs px-8 py-3">Shop Now</button>
       </div>
     </main>
@@ -144,7 +141,6 @@ export default function CheckoutPage() {
   if (isFetchingProfile || isValidating) {
     return (
       <main className="site-shell flex flex-col min-h-screen bg-[#080808]">
-        <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin" />
         </div>
@@ -154,7 +150,6 @@ export default function CheckoutPage() {
 
   return (
     <main className="site-shell bg-[#080808] min-h-screen">
-      <Navbar />
       <div className="site-container detail-layout max-w-6xl pt-32 lg:pt-40">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <p className="neo-kicker mb-3">Checkout</p>
@@ -249,7 +244,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }
