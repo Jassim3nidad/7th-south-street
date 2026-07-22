@@ -829,7 +829,13 @@ export type Database = {
         Returns: number
       }
       admin_create_product: { Args: { p_product: Json }; Returns: Json }
-      admin_dashboard_stats: { Args: never; Returns: Json }
+      admin_dashboard_stats: {
+        Args: {
+          p_start_date?: string
+          p_end_date?: string
+        }
+        Returns: Json
+      }
       admin_delete_product: {
         Args: { p_product_id: number }
         Returns: undefined

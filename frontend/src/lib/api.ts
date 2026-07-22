@@ -83,7 +83,13 @@ export const authApi = {
 
 // ── Dashboard ────────────────────────────────────────────────
 export const dashboardApi = {
-  stats: (token: string) => apiFetch<any>('/dashboard/stats', { token }),
+  stats: (token: string, from?: string, to?: string) => {
+    const params = new URLSearchParams()
+    if (from) params.append('from', from)
+    if (to) params.append('to', to)
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    return apiFetch<any>(`/dashboard/stats${qs}`, { token })
+  },
 }
 
 // ── Newsletter ───────────────────────────────────────────────
