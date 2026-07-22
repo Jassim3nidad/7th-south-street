@@ -14,15 +14,15 @@ export default function CatalogSort() {
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <label htmlFor="sort" className="text-xs font-bold uppercase tracking-widest text-text-secondary">
+    <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-64">
+      <label htmlFor="sort" className="neo-kicker">
         Sort By
       </label>
       <select
         id="sort"
         value={currentSort}
         onChange={handleSortChange}
-        className="rounded-none border-b border-border bg-transparent py-1 pr-8 text-sm font-bold uppercase tracking-widest text-text-primary focus:border-brand-500 focus:outline-none focus:ring-0"
+        className="input-dark min-h-11 cursor-pointer pr-10 text-sm font-bold uppercase tracking-wider"
       >
         <option value="newest">Newest Arrivals</option>
         <option value="price_asc">Price: Low to High</option>
