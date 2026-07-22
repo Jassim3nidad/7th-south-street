@@ -3,7 +3,6 @@
 import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
-import Navbar from '@/components/layout/Navbar'
 import OrderDetails from '@/components/orders/OrderDetails'
 import { getTrackedOrder, TrackedOrder } from '@/app/actions/orders'
 import toast from 'react-hot-toast'
@@ -47,31 +46,31 @@ function TrackOrderForm() {
       {!order ? (
         <div className="neo-panel max-w-md mx-auto p-8">
           <div className="text-center mb-8">
-            <h1 className="text-white font-light text-3xl" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Track Order</h1>
-            <p className="text-white/40 text-sm mt-2">Enter your order details below</p>
+            <h1 className="neo-heading text-3xl">Track Order</h1>
+            <p className="neo-muted mt-2 text-sm">Enter your order details below</p>
           </div>
           <form onSubmit={handleTrack} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="orderNumber" className="text-xs uppercase tracking-widest text-white/40">Order Number</label>
+              <label htmlFor="orderNumber" className="neo-kicker block">Order Number</label>
               <input
                 id="orderNumber"
                 type="text"
                 value={orderNumber}
                 onChange={e => setOrderNumber(e.target.value)}
                 placeholder="7SS-XXXXXXXX"
-                className="site-input"
+                className="input-dark"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-xs uppercase tracking-widest text-white/40">Email Address</label>
+              <label htmlFor="email" className="neo-kicker block">Email Address</label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="site-input"
+                className="input-dark"
                 required
               />
             </div>
@@ -87,7 +86,7 @@ function TrackOrderForm() {
       ) : (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-8 text-center">
-             <button onClick={() => setOrder(null)} className="text-[#C9A96E] hover:text-white transition-colors text-xs uppercase tracking-widest">
+             <button onClick={() => setOrder(null)} className="btn-ghost">
                &larr; Track Another Order
              </button>
           </div>
@@ -100,8 +99,7 @@ function TrackOrderForm() {
 
 export default function TrackOrderPage() {
   return (
-    <main className="site-shell flex flex-col min-h-screen bg-[#080808]">
-      <Navbar />
+    <main className="site-shell flex min-h-screen flex-col">
       <Suspense fallback={
         <div className="flex-1 flex justify-center items-center">
           <div className="w-8 h-8 border border-[#C9A96E]/20 border-t-[#C9A96E] rounded-full animate-spin" />
