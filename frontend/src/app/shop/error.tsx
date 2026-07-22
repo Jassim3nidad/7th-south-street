@@ -16,30 +16,35 @@ export default function ShopError({
   }, [error]);
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center bg-base py-24 text-center px-4">
-      <div className="mb-6 rounded-full bg-red-900/10 p-6 text-red-500">
-        <AlertCircle className="h-10 w-10" />
-      </div>
-      <h2 className="font-display text-2xl font-black uppercase tracking-widest text-text-primary mb-3">
-        Catalog Error
-      </h2>
-      <p className="text-text-secondary mb-8 max-w-md">
-        We encountered a problem loading the collection. Please try again.
-      </p>
-      <div className="flex gap-4">
-        <button
-          onClick={() => reset()}
-          className="rounded-none bg-text-primary px-8 py-3 text-sm font-bold uppercase tracking-widest text-base transition hover:bg-brand-500"
+    <main className="site-shell">
+      <div className="site-container flex min-h-[calc(100dvh-5rem)] items-center justify-center px-0 py-28 text-center">
+        <section
+          className="neo-state flex w-full max-w-xl flex-col items-center px-6 py-16 sm:px-10"
+          role="alert"
+          aria-labelledby="catalog-error-heading"
         >
-          Try Again
-        </button>
-        <Link
-          href="/"
-          className="rounded-none border border-border bg-transparent px-8 py-3 text-sm font-bold uppercase tracking-widest text-text-primary transition hover:border-brand-500 hover:text-brand-500"
-        >
-          Return Home
-        </Link>
+          <div
+            className="neo-inset mb-6 grid h-20 w-20 place-items-center rounded-full"
+            style={{ color: "var(--neo-error)" }}
+          >
+            <AlertCircle className="h-10 w-10" aria-hidden="true" />
+          </div>
+          <h1 id="catalog-error-heading" className="neo-heading mb-3 text-3xl sm:text-4xl">
+            Catalog Error
+          </h1>
+          <p className="neo-muted mb-8 max-w-md">
+            We encountered a problem loading the collection. Please try again.
+          </p>
+          <div className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
+            <button onClick={() => reset()} className="btn-primary">
+              Try Again
+            </button>
+            <Link href="/" className="btn-outline">
+              Return Home
+            </Link>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
