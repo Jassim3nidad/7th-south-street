@@ -1,7 +1,7 @@
 export const currentDrop = {
   title: "The Midnight Collection",
   description: "Limited edition drop. Only 50 pieces available.",
-  imageUrl: "https://images.unsplash.com/photo-1550614000-4b95d4ed7942?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  imageUrl: "/logo.png",
   releaseDate: "Releasing Oct 2026",
 };
 
