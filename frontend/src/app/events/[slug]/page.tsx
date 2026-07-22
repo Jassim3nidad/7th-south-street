@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import Navbar from '@/components/layout/Navbar'
-import Footer from '@/components/layout/Footer'
-import CartDrawer from '@/components/layout/CartDrawer'
 import { eventsApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -63,7 +60,7 @@ export default function EventDetailPage() {
   }
 
   if (loading) return (
-    <main className="site-shell"><Navbar />
+    <main className="site-shell">
       <div className="pt-40 max-w-4xl mx-auto px-6 space-y-6">
         <div className="h-6 skeleton w-32" /><div className="h-16 skeleton w-2/3" /><div className="h-4 skeleton w-1/3" />
       </div>
@@ -71,8 +68,8 @@ export default function EventDetailPage() {
   )
 
   if (!event) return (
-    <main className="site-shell flex items-center justify-center"><Navbar />
-      <p className="text-white/30">Event not found</p>
+    <main className="site-shell flex items-center justify-center">
+      <h1 className="neo-heading text-3xl">Event not found</h1>
     </main>
   )
 
@@ -81,9 +78,6 @@ export default function EventDetailPage() {
 
   return (
     <main className="site-shell">
-      <Navbar />
-      <CartDrawer />
-
       <div className="site-container detail-layout max-w-5xl">
         {/* Breadcrumb */}
         <p className="detail-breadcrumb text-white/20 text-xs tracking-widest uppercase mb-8">
@@ -212,12 +206,12 @@ export default function EventDetailPage() {
                 <>
                   <p className="text-white/30 text-[10px] tracking-widest uppercase mb-6">Reserve Your Spot</p>
                   <form onSubmit={handleRSVP} className="space-y-4">
-                    <div><label className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Name *</label>
-                      <input value={rsvpForm.name} onChange={e => setRsvpForm({ ...rsvpForm, name: e.target.value })} required className="input-dark" placeholder="Your full name" /></div>
-                    <div><label className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Email *</label>
-                      <input type="email" value={rsvpForm.email} onChange={e => setRsvpForm({ ...rsvpForm, email: e.target.value })} required className="input-dark" placeholder="your@email.com" /></div>
-                    <div><label className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Phone</label>
-                      <input value={rsvpForm.phone} onChange={e => setRsvpForm({ ...rsvpForm, phone: e.target.value })} className="input-dark" placeholder="+63 9XX XXX XXXX" /></div>
+                    <div><label htmlFor="event-rsvp-name" className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Name *</label>
+                      <input id="event-rsvp-name" name="name" autoComplete="name" value={rsvpForm.name} onChange={e => setRsvpForm({ ...rsvpForm, name: e.target.value })} required className="input-dark" placeholder="Your full name" /></div>
+                    <div><label htmlFor="event-rsvp-email" className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Email *</label>
+                      <input id="event-rsvp-email" name="email" type="email" autoComplete="email" value={rsvpForm.email} onChange={e => setRsvpForm({ ...rsvpForm, email: e.target.value })} required className="input-dark" placeholder="your@email.com" /></div>
+                    <div><label htmlFor="event-rsvp-phone" className="text-white/25 text-[10px] tracking-widest uppercase block mb-1.5">Phone</label>
+                      <input id="event-rsvp-phone" name="phone" type="tel" autoComplete="tel" value={rsvpForm.phone} onChange={e => setRsvpForm({ ...rsvpForm, phone: e.target.value })} className="input-dark" placeholder="+63 9XX XXX XXXX" /></div>
                     <button type="submit" disabled={rsvpLoading}
                       className="btn-primary w-full mt-2">
                       {rsvpLoading ? 'Confirming...' : 'RSVP Now — Free'}
@@ -230,7 +224,6 @@ export default function EventDetailPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }
