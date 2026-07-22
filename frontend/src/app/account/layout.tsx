@@ -1,8 +1,5 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
-import Navbar from '@/components/layout/Navbar'
-import Footer from '@/components/layout/Footer'
 import LogoutButton from '@/components/auth/LogoutButton'
 import { createClient } from '@/lib/supabase/server'
 
@@ -37,7 +34,6 @@ export default async function AccountLayout({ children }: { children: React.Reac
 
   return (
     <main className="site-shell">
-      <Navbar />
       <div className="account-layout">
         {/* Sidebar */}
         <aside className="account-sidebar" aria-label="Account navigation">
@@ -80,7 +76,6 @@ export default async function AccountLayout({ children }: { children: React.Reac
           {children}
         </div>
       </div>
-      <Footer />
     </main>
   )
 }
