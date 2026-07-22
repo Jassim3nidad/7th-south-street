@@ -48,21 +48,21 @@ export default function AdminLoginPage() {
             <Image src="/logo.png" alt="7SS Logo" width={32} height={32} className="brand-logo object-contain" />
           </div>
           <div>
-            <span className="text-white text-sm tracking-[0.2em] uppercase font-medium">The Vault</span>
+            <h1 className="text-white text-sm tracking-[0.2em] uppercase font-medium">The Vault</h1>
             <p className="text-white/20 text-[10px] tracking-widest uppercase">Admin Dashboard</p>
           </div>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="text-white/30 text-[10px] tracking-widest uppercase block mb-2">Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email"
+            <label htmlFor="admin-email" className="text-white/30 text-[10px] tracking-widest uppercase block mb-2">Email</label>
+            <input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email"
               className="input-dark"
               placeholder="admin@7thsouthstreet.com" />
           </div>
           <div>
-            <label className="text-white/30 text-[10px] tracking-widest uppercase block mb-2">Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password"
+            <label htmlFor="admin-password" className="text-white/30 text-[10px] tracking-widest uppercase block mb-2">Password</label>
+            <input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password"
               className="input-dark"
               placeholder="••••••••" />
           </div>
