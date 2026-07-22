@@ -743,6 +743,45 @@ export type Database = {
         }
         Relationships: []
       }
+      transactional_email_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          idempotency_key: string
+          recipient_email: string
+          sent_at: string | null
+          status: string
+          subject: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key: string
+          recipient_email: string
+          sent_at?: string | null
+          status: string
+          subject: string
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           added_at: string
@@ -837,6 +876,14 @@ export type Database = {
       unsubscribe_newsletter: {
         Args: { p_token: string }
         Returns: Json
+      }
+      log_transactional_email: {
+        Args: { p_idempotency_key: string; p_recipient_email: string; p_template_name: string; p_subject: string }
+        Returns: Json
+      }
+      update_transactional_email_status: {
+        Args: { p_log_id: string; p_status: string; p_error_message?: string }
+        Returns: undefined
       }
     }
     Enums: {

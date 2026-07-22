@@ -12,7 +12,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     const { data: event } = await supabase
       .from('events')
-      .select('event_date, end_date')
+      .select('title, location_name, event_date, end_date')
       .eq('id', Number(id))
       .single()
 
@@ -33,6 +33,33 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (result && result.created === false) {
       return failure('You have already registered for this event', 400)
     }
+
+    // Send transactional email
+    if (body?.email) {
+      import('@/lib/email').then(async ({ sendTransactionalEmail }) => {
+        const { getRSVPConfirmationTemplate } = await import('@/lib/email-templates')
+        
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://7thsouthstreet.com'
+        const eventUrl = `\${siteUrl}/events/\${id}`
+
+        const html = getRSVPConfirmationTemplate(
+          event.title,
+          body.name || 'Guest',
+          new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          event.location_name || 'TBA',
+          eventUrl
+        )
+
+        await sendTransactionalEmail({
+          idempotencyKey: `rsvp-\${id}-\${body.email}`,
+          to: body.email,
+          subject: `You're on the list - \${event.title}`,
+          templateName: 'rsvp_confirmation',
+          html
+        })
+      }).catch(err => console.error('Email trigger failed:', err))
+    }
+
     return success(data, 'Reservation received', 201)
   } catch (error) {
     return handleRouteError(error, 'Unable to reserve a place')

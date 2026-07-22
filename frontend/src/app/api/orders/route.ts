@@ -84,6 +84,38 @@ export async function POST(request: Request) {
     })
     if (error) throw error
 
+    // Send transactional email
+    const orderData = data as any
+    if (orderData?.order_number && body.shipping_email) {
+      import('@/lib/email').then(async ({ sendTransactionalEmail }) => {
+        const { getOrderConfirmationTemplate } = await import('@/lib/email-templates')
+        
+        let itemsHtml = ''
+        for (const item of (body.items as any[])) {
+          itemsHtml += `<p style="margin: 0 0 4px 0;">\${item.quantity}x \${item.product_name} (\${item.size || ''})</p>`
+        }
+
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://7thsouthstreet.com'
+        const trackingUrl = `\${siteUrl}/track?id=\${orderData.order_number}&email=\${encodeURIComponent(body.shipping_email)}`
+
+        const html = getOrderConfirmationTemplate(
+          orderData.order_number,
+          body.first_name || body.shipping_name || 'Customer',
+          itemsHtml,
+          `\u20B1\${Number(orderData.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+          trackingUrl
+        )
+
+        await sendTransactionalEmail({
+          idempotencyKey: `order-confirmation-\${orderData.order_number}`,
+          to: body.shipping_email,
+          subject: `Order Confirmed - \${orderData.order_number}`,
+          templateName: 'order_confirmation',
+          html
+        })
+      }).catch(err => console.error('Email trigger failed:', err))
+    }
+
     return success({ ...(data as Record<string, unknown>), tracking_key: idempotencyKey }, 'Order placed', 201)
   } catch (error) {
     return handleRouteError(error, 'Unable to place order')
