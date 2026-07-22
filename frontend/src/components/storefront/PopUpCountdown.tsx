@@ -36,36 +36,46 @@ export default function PopUpCountdown() {
   }, []);
 
   return (
-    <section className="w-full bg-border py-16">
-      <div className="mx-auto flex max-w-5xl flex-col items-center text-center px-4">
-        <h3 className="font-display text-2xl font-black uppercase tracking-widest text-text-primary mb-2">
-          {popUpEvent.title}
-        </h3>
-        <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-text-secondary mb-6">
-          <MapPin className="h-4 w-4" /> {popUpEvent.location}
+    <section className="site-section" aria-labelledby="pop-up-heading">
+      <div className="site-container">
+        <div className="neo-panel mx-auto flex max-w-5xl flex-col items-center px-5 py-10 text-center sm:px-10 sm:py-12">
+        <p className="neo-kicker mb-4 flex items-center justify-center gap-2">
+          <MapPin className="h-4 w-4" aria-hidden="true" /> {popUpEvent.location}
         </p>
-        
-        <div className="flex gap-4 sm:gap-8 mb-8">
+        <h2 id="pop-up-heading" className="neo-heading mb-8 text-3xl sm:text-4xl">
+          {popUpEvent.title}
+        </h2>
+
+        <dl
+          className="mb-8 grid w-full max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5"
+          role="timer"
+          aria-label={`Time remaining until ${popUpEvent.title}`}
+          aria-live="off"
+        >
           {[
             { label: "Days", value: timeLeft.days },
             { label: "Hours", value: timeLeft.hours },
             { label: "Mins", value: timeLeft.minutes },
             { label: "Secs", value: timeLeft.seconds },
           ].map((item) => (
-            <div key={item.label} className="flex flex-col items-center">
-              <span className="font-display text-4xl font-black text-brand-500 sm:text-6xl">
-                {String(item.value).padStart(2, "0")}
-              </span>
-              <span className="text-xs font-bold uppercase tracking-widest text-text-secondary mt-1">
+            <div key={item.label} className="neo-inset flex min-h-28 flex-col items-center justify-center p-4">
+              <dt className="order-2 mt-2 text-xs font-bold uppercase tracking-widest neo-muted">
                 {item.label}
-              </span>
+              </dt>
+              <dd
+                className="order-1 font-display text-4xl font-semibold sm:text-5xl"
+                style={{ color: "var(--neo-accent-strong)" }}
+              >
+                {String(item.value).padStart(2, "0")}
+              </dd>
             </div>
           ))}
-        </div>
-        
-        <p className="max-w-xl text-text-secondary">
+        </dl>
+
+        <p className="neo-muted max-w-xl leading-relaxed">
           {popUpEvent.description}
         </p>
+        </div>
       </div>
     </section>
   );
