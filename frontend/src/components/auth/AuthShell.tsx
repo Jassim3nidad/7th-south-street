@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import Footer from '@/components/layout/Footer'
-import Navbar from '@/components/layout/Navbar'
 
 type AuthShellProps = {
   eyebrow: string
@@ -15,7 +13,6 @@ type AuthShellProps = {
 export default function AuthShell({ eyebrow, title, description, children, wide = false }: AuthShellProps) {
   return (
     <main className="site-shell">
-      <Navbar />
       <section className="auth-page" aria-labelledby="auth-page-title">
         <div className="auth-page__glow" aria-hidden="true" />
         <div className={`auth-card neo-panel ${wide ? 'auth-card--wide' : ''}`}>
@@ -38,7 +35,6 @@ export default function AuthShell({ eyebrow, title, description, children, wide 
           {children}
         </div>
       </section>
-      <Footer />
     </main>
   )
 }
