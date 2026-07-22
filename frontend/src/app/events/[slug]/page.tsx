@@ -106,6 +106,13 @@ export default function EventDetailPage() {
                 {event.title}
               </h1>
 
+              {/* Poster */}
+              {event.poster_url && (
+                <div className="mb-8 relative aspect-[4/3] w-full overflow-hidden neo-surface-sm">
+                  <img src={event.poster_url} alt={event.title} className="object-cover w-full h-full opacity-90" />
+                </div>
+              )}
+
               {/* Date */}
               <div className="flex items-center gap-3 mb-4">
                 <svg className="w-4 h-4 text-white/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,6 +145,20 @@ export default function EventDetailPage() {
 
               {event.description && (
                 <p className="text-white/40 text-sm leading-relaxed mb-10 border-t border-white/[0.06] pt-6">{event.description}</p>
+              )}
+
+              {/* Gallery */}
+              {event.gallery && event.gallery.length > 0 && (
+                <div className="mb-10">
+                  <p className="text-white/20 text-[10px] tracking-widest uppercase mb-4">Gallery</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {event.gallery.map((img: any, i: number) => (
+                      <div key={img.id} className={`relative overflow-hidden neo-surface-sm ${i === 0 && event.gallery.length % 2 !== 0 ? 'col-span-2 aspect-[21/9]' : 'aspect-square'}`}>
+                        <img src={img.image_url} alt={`Gallery image ${i + 1}`} className="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* RSVP progress */}

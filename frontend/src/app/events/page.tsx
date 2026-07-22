@@ -71,6 +71,11 @@ export default function EventsPage() {
                   <div className="event-card neo-surface-sm p-6 lg:p-8">
                     <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                       <div className="lg:col-span-2">
+                        {event.poster_url && (
+                          <div className="mb-6 relative aspect-[21/9] w-full overflow-hidden neo-surface-sm">
+                            <img src={event.poster_url} alt={event.title} className="object-cover w-full h-full opacity-90" />
+                          </div>
+                        )}
                         <div className="flex items-center gap-4 mb-4">
                           <span className="text-[#C9A96E] text-xs tracking-widest uppercase">
                             {new Date(event.event_date).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
