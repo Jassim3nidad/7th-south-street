@@ -66,10 +66,37 @@ export default async function ProductPage({ params }: Props) {
   )
 
   return (
-    <ProductDetailClient
-      product={product}
-      initialSaved={initialSaved}
-      relatedProducts={relatedProducts}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": product.primary_image ? [product.primary_image] : [],
+            "description": product.description || product.meta_description || product.name,
+            "sku": product.sku,
+            "brand": {
+              "@type": "Brand",
+              "name": "7Th South Street"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": `https://7thsouthstreet.com/shop/${product.slug}`,
+              "priceCurrency": "PHP",
+              "price": product.base_price,
+              "itemCondition": "https://schema.org/NewCondition",
+              "availability": product.status === 'published' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            }
+          })
+        }}
+      />
+      <ProductDetailClient
+        product={product}
+        initialSaved={initialSaved}
+        relatedProducts={relatedProducts}
+      />
+    </>
   )
 }
