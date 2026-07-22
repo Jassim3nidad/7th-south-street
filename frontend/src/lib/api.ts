@@ -66,6 +66,7 @@ export const ordersApi = {
     return apiFetch<any>(`/orders${qs}`, { token })
   },
   get: (id: number, token?: string) => apiFetch<any>(`/orders/${id}`, { token }),
+  getHistory: (id: number, token: string) => apiFetch<any>(`/orders/${id}/history`, { token }),
   create: (body: unknown) => apiFetch<any>('/orders', { method: 'POST', body }),
   update: (id: number, body: unknown, token: string) =>
     apiFetch<any>(`/orders/${id}`, { method: 'PUT', body, token }),

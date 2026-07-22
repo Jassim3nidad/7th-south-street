@@ -133,8 +133,24 @@ export async function GET(request: Request) {
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range((page - 1) * perPage, page * perPage - 1)
+
     const status = searchParams.get('status') as OrderStatus | null
     if (status && orderStatuses.includes(status)) query = query.eq('status', status)
+    
+    const paymentStatus = searchParams.get('payment_status')
+    if (paymentStatus && ['unpaid', 'paid', 'refunded'].includes(paymentStatus)) query = query.eq('payment_status', paymentStatus as any)
+
+    const fromDate = searchParams.get('from')
+    if (fromDate) query = query.gte('created_at', fromDate)
+
+    const toDate = searchParams.get('to')
+    if (toDate) query = query.lte('created_at', toDate)
+
+    const search = searchParams.get('search')
+    if (search) {
+      query = query.or(`order_number.ilike.%${search}%,shipping_name.ilike.%${search}%,shipping_email.ilike.%${search}%,guest_email.ilike.%${search}%`)
+    }
+
     const { data, error, count } = await query
     if (error) throw error
 
