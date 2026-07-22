@@ -1,7 +1,29 @@
 import { failure, handleRouteError, success } from '@/lib/http'
 import { createClient } from '@/lib/supabase/server'
 
+import { requireAdmin } from '@/lib/supabase/admin'
+
 type RouteContext = { params: Promise<{ id: string }> }
+
+export async function GET(request: Request, { params }: RouteContext) {
+  try {
+    const { id } = await params
+    if (!/^\d+$/.test(id)) return failure('Event not found', 404)
+    
+    const { supabase } = await requireAdmin()
+    
+    const { data, error } = await supabase
+      .from('event_rsvps')
+      .select('*')
+      .eq('event_id', Number(id))
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return success(data || [])
+  } catch (error) {
+    return handleRouteError(error, 'Unable to load RSVPs')
+  }
+}
 
 export async function POST(request: Request, { params }: RouteContext) {
   try {

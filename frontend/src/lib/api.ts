@@ -87,6 +87,8 @@ export const eventsApi = {
     apiFetch<any>(`/events/${id}`, { method: 'PUT', body, token }),
   delete: (id: number, token: string) =>
     apiFetch<any>(`/events/${id}`, { method: 'DELETE', token }),
+  getRsvps: (id: number, token: string) =>
+    apiFetch<any>(`/events/${id}/rsvp`, { token }),
 }
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -130,4 +132,13 @@ export const inventoryApi = {
     if (variantId) params.append('variant_id', String(variantId))
     return apiFetch<any>(`/inventory/movements?${params.toString()}`, { token })
   },
+}
+
+// -- Customers ------------------------------------------------
+export const customersApi = {
+  list: (params?: Record<string, string>, token?: string) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : ''
+    return apiFetch<any>('/customers' + qs, { token })
+  },
+  get: (id: number | string, token?: string) => apiFetch<any>('/customers/' + id, { token }),
 }
