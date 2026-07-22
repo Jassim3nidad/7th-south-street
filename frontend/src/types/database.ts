@@ -356,6 +356,9 @@ export type Database = {
           id: number
           is_active: boolean
           name: string | null
+          source: string
+          consent_recorded_at: string
+          unsubscribe_token: string
           subscribed_at: string
           unsubscribed_at: string | null
         }
@@ -364,6 +367,9 @@ export type Database = {
           id?: number
           is_active?: boolean
           name?: string | null
+          source?: string
+          consent_recorded_at?: string
+          unsubscribe_token?: string
           subscribed_at?: string
           unsubscribed_at?: string | null
         }
@@ -372,6 +378,9 @@ export type Database = {
           id?: number
           is_active?: boolean
           name?: string | null
+          source?: string
+          consent_recorded_at?: string
+          unsubscribe_token?: string
           subscribed_at?: string
           unsubscribed_at?: string | null
         }
@@ -822,7 +831,11 @@ export type Database = {
         Returns: Json
       }
       subscribe_newsletter: {
-        Args: { p_email: string; p_name: string; p_request_hash: string }
+        Args: { p_email: string; p_name: string; p_source: string; p_request_hash: string }
+        Returns: Json
+      }
+      unsubscribe_newsletter: {
+        Args: { p_token: string }
         Returns: Json
       }
     }

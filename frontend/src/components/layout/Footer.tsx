@@ -21,6 +21,7 @@ const social = [
 
 export default function Footer() {
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
 
   const handleSubscribe = async (event: React.FormEvent) => {
@@ -28,9 +29,10 @@ export default function Footer() {
     if (!email || status === 'loading') return
     setStatus('loading')
     try {
-      await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+      await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, website, source: 'footer' }) })
       setStatus('done')
       setEmail('')
+      setWebsite('')
     } catch {
       setStatus('idle')
     }
@@ -56,11 +58,17 @@ export default function Footer() {
               <p className="site-footer__success" role="status">You&apos;re in. ✓</p>
             ) : (
               <form onSubmit={handleSubscribe} className="site-footer__form">
+                {/* Honeypot field */}
+                <div className="hidden" aria-hidden="true">
+                  <label htmlFor="footer-website">Website</label>
+                  <input id="footer-website" type="text" value={website} onChange={e => setWebsite(e.target.value)} tabIndex={-1} autoComplete="off" />
+                </div>
                 <label htmlFor="footer-email" className="sr-only">Your email</label>
                 <input id="footer-email" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="Your email" required className="input-dark" />
                 <button type="submit" disabled={status === 'loading'} className="btn-primary" aria-label="Subscribe to newsletter">
                   {status === 'loading' ? '…' : 'Subscribe'}
                 </button>
+                <p className="text-xs text-text-muted mt-2">By subscribing, you consent to receive marketing emails.</p>
               </form>
             )}
           </div>
