@@ -49,41 +49,50 @@ export function InventoryAdjustmentModal({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="theme-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        className="neo-modal w-full max-w-lg overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="inventory-adjustment-title"
+        aria-busy={saving}
+      >
         
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-6 sm:items-center">
           <div>
-            <h2 className="text-xl font-light text-[#C9A96E]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Adjust Inventory</h2>
-            <p className="text-white/40 text-xs mt-1 font-mono">{variant.product_name} • {variant.size} • {variant.sku}</p>
+            <h2 id="inventory-adjustment-title" className="font-display text-2xl font-medium text-text-primary">Adjust Inventory</h2>
+            <p className="mt-1 font-mono text-xs text-text-muted">{variant.product_name} • {variant.size} • {variant.sku}</p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button onClick={onClose} className="btn-ghost modal-close-button shrink-0 p-0" aria-label="Close inventory adjustment dialog">
+            <svg className="h-5 w-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs uppercase tracking-widest text-white/40 mb-2">New Quantity</label>
-              <input type="number" min="0" value={stock} onChange={e => setStock(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#C9A96E] transition-colors" />
+              <label htmlFor="inventory-new-quantity" className="mb-2 block text-xs uppercase tracking-widest text-text-muted">New Quantity</label>
+              <input id="inventory-new-quantity" type="number" min="0" value={stock} onChange={e => setStock(e.target.value)} className="input-dark inventory-stock-input" />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-widest text-white/40 mb-2">Low Stock Threshold</label>
-              <input type="number" min="0" value={threshold} onChange={e => setThreshold(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#C9A96E] transition-colors" />
+              <label htmlFor="inventory-low-stock-threshold" className="mb-2 block text-xs uppercase tracking-widest text-text-muted">Low Stock Threshold</label>
+              <input id="inventory-low-stock-threshold" type="number" min="0" value={threshold} onChange={e => setThreshold(e.target.value)} className="input-dark inventory-stock-input" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-white/40 mb-2">Reason for Adjustment</label>
-            <textarea required rows={3} value={reason} onChange={e => setReason(e.target.value)} placeholder="e.g., Restock shipment received, found damaged item, manual count correction" className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#C9A96E] transition-colors" />
-            <p className="text-white/30 text-[10px] mt-2">This reason will be permanently recorded in the audit log.</p>
+            <label htmlFor="inventory-adjustment-reason" className="mb-2 block text-xs uppercase tracking-widest text-text-muted">Reason for Adjustment</label>
+            <textarea id="inventory-adjustment-reason" required aria-required="true" aria-describedby="inventory-adjustment-hint" rows={3} value={reason} onChange={e => setReason(e.target.value)} placeholder="e.g., Restock shipment received, found damaged item, manual count correction" className="input-dark" />
+            <p id="inventory-adjustment-hint" className="mt-2 text-[10px] text-text-muted">This reason will be permanently recorded in the audit log.</p>
           </div>
         </div>
 
-        <div className="p-6 border-t border-white/10 flex justify-end gap-4 bg-[#0a0a0a]">
-          <button onClick={onClose} className="px-6 py-2.5 text-sm text-white/50 hover:text-white transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving || !reason.trim()} className="btn-primary text-sm px-8 py-2.5 disabled:opacity-50">
+        <div className="flex flex-wrap justify-end gap-3 border-t border-border p-6">
+          <button onClick={onClose} className="btn-ghost">Cancel</button>
+          <button onClick={handleSave} disabled={saving || !reason.trim()} className="btn-primary inventory-save-button px-8" aria-busy={saving}>
             {saving ? 'Saving...' : 'Confirm Adjustment'}
           </button>
         </div>
