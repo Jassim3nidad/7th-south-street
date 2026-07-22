@@ -414,28 +414,42 @@ begin
       sum((item ->> 'quantity')::integer)::integer as quantity
     from jsonb_array_elements(p_items) as items(item)
     group by (item ->> 'variant_id')::bigint
+    order by (item ->> 'variant_id')::bigint
   loop
     select
+      variants.id,
+      variants.product_id,
+      variants.sku,
+      variants.size,
+      variants.color,
       variants.price,
       products.name as product_name
-    into v_variant
+    into strict v_variant
     from public.product_variants as variants
     join public.products as products on products.id = variants.product_id
     where variants.id = v_item.variant_id;
 
     insert into public.order_items (
       order_id,
+      product_id,
       variant_id,
-      product_name,
+      product_name_snapshot,
+      sku_snapshot,
+      size_snapshot,
+      color_snapshot,
+      unit_price_snapshot,
       quantity,
-      price,
-      total
+      line_total
     ) values (
       v_order_id,
-      v_item.variant_id,
+      v_variant.product_id,
+      v_variant.id,
       v_variant.product_name,
-      v_item.quantity,
+      v_variant.sku,
+      v_variant.size,
+      v_variant.color,
       v_variant.price,
+      v_item.quantity,
       v_variant.price * v_item.quantity
     );
 
