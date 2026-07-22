@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import Navbar from '@/components/layout/Navbar'
 import OrderDetails from '@/components/orders/OrderDetails'
 import { getTrackedOrder } from '@/app/actions/orders'
 
@@ -12,7 +11,7 @@ async function OrderConfirmationContent({ searchParams }: { searchParams: Promis
   if (!orderNumber) {
     return (
       <div className="neo-panel max-w-2xl mx-auto flex flex-col items-center justify-center gap-6 text-center px-6 py-20">
-        <p className="text-white/40">No order number provided.</p>
+        <h1 className="neo-heading text-3xl">No order number provided.</h1>
         <Link href="/" className="btn-outline px-8 py-3 text-xs">Return Home</Link>
       </div>
     )
@@ -23,6 +22,7 @@ async function OrderConfirmationContent({ searchParams }: { searchParams: Promis
   if (!order) {
     return (
       <div className="neo-panel max-w-2xl mx-auto flex flex-col items-center justify-center gap-6 text-center px-6 py-20">
+        <h1 className="neo-heading text-3xl">Order details unavailable</h1>
         <p className="text-white/40 mb-4">We could not retrieve this order's details. If you recently placed this order, check your email for confirmation.</p>
         <Link href={`/track?order=${orderNumber}`} className="btn-primary px-8 py-3 text-xs mb-2">Track Order Manually</Link>
         <Link href="/" className="btn-outline px-8 py-3 text-xs">Return Home</Link>
@@ -35,8 +35,7 @@ async function OrderConfirmationContent({ searchParams }: { searchParams: Promis
 
 export default function OrderConfirmationPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   return (
-    <main className="site-shell flex flex-col min-h-screen bg-[#080808]">
-      <Navbar />
+    <main className="site-shell flex min-h-screen flex-col">
       <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-32 sm:py-40">
         <Suspense fallback={
           <div className="flex justify-center items-center h-64">
