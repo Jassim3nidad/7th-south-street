@@ -458,6 +458,24 @@ begin
     where id = v_item.variant_id
     returning stock_quantity into v_stock_after;
 
+    insert into public.inventory_movements (
+      variant_id,
+      order_id,
+      movement_type,
+      quantity_delta,
+      stock_after,
+      reason,
+      actor_user_id
+    ) values (
+      v_variant.id,
+      v_order_id,
+      'sale',
+      -v_item.quantity,
+      v_stock_after,
+      'Order ' || v_order_number,
+      v_user_id
+    );
+
     if v_stock_after = 0 then
       update public.product_variants
       set is_active = false
