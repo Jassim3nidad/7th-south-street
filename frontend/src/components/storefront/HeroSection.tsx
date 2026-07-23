@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import CursorGrid from "@/components/ui/CursorGrid";
 
 export default function HeroSection() {
   return (
@@ -46,20 +45,6 @@ export default function HeroSection() {
               background:
                 "linear-gradient(145deg, rgb(var(--neo-surface-strong-rgb) / 0.08), rgb(var(--neo-text-rgb) / 0.28))",
             }}
-          />
-          <CursorGrid
-            className="neo-hero__cursor-grid"
-            cellSize={64}
-            color="#79AAFF"
-            radius={150}
-            holdTime={320}
-            fadeDuration={900}
-            lineWidth={1.1}
-            maxOpacity={0.9}
-            fillOpacity={0.035}
-            gridOpacity={0.06}
-            cellRadius={6}
-            pulseSpeed={560}
           />
         </div>
       </div>
