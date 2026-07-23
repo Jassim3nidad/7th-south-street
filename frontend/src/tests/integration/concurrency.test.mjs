@@ -97,7 +97,7 @@ try {
   }
   assert.equal(successful.length, 1, 'exactly one concurrent checkout must succeed')
   assert.equal(rejected.length, 1, 'exactly one concurrent checkout must be rejected')
-  assert.match(rejected[0].error.message, /insufficient stock/i)
+  assert.match(rejected[0].error.message, /unavailable/i)
 
   const [{ data: stock, error: stockError }, { data: movements, error: movementError }] = await Promise.all([
     service.from('product_variants').select('stock_quantity').eq('id', variantId).single(),
