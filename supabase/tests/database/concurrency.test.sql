@@ -116,7 +116,7 @@ begin
     perform public.admin_update_order(v_order_id, 'processing');
     raise exception 'Cancelled order was reopened';
   exception when others then
-    if sqlerrm not like 'Cancelled orders cannot be reopened' then raise; end if;
+    if sqlerrm not like '%Cancelled orders cannot be modified%' then raise; end if;
   end;
 end;
 $$;

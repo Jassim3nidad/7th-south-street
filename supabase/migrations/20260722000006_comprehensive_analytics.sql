@@ -198,7 +198,7 @@ begin
           and o.status not in ('cancelled', 'refunded')
           and (p_start_date is null or o.created_at >= p_start_date)
           and (p_end_date is null or o.created_at <= p_end_date)
-        where p.status = 'published'
+        where p.status in ('available', 'sold_out')
         group by p.id, p.name
         having sum(oi.quantity) > 0
         order by sell_through_rate desc
