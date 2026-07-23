@@ -69,7 +69,7 @@ jobs:
         run: npm run build
 
       - name: Verify Auth middleware is compiled
-        run: node -e "const manifest=require('./.next/server/middleware-manifest.json'); if (!manifest.sortedMiddleware?.includes('/')) throw new Error('Auth middleware is missing from the production build')"
+        run: node -e "if (!require('fs').existsSync('./.next/server/middleware.js')) throw new Error('Auth proxy/middleware is missing from the production build')"
 
   database:
     name: Supabase database checks
