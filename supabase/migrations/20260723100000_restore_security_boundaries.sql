@@ -1,4 +1,5 @@
 -- Restore security definer boundary for create_order
+drop function if exists private.create_order_impl(jsonb, jsonb, jsonb, text, text, uuid);
 alter function public.create_order(jsonb, jsonb, jsonb, text, text, uuid) set schema private;
 alter function private.create_order(jsonb, jsonb, jsonb, text, text, uuid) rename to create_order_impl;
 revoke all on function private.create_order_impl(jsonb, jsonb, jsonb, text, text, uuid) from public;
