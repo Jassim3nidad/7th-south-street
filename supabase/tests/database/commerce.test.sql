@@ -243,6 +243,7 @@ reset role;
 select extensions.pass('administrators can access analytics and maintain inventory safely');
 
 set local role anon;
+select set_config('request.jwt.claims', '', true);
 do $$
 declare
   v_storage_denied boolean := false;

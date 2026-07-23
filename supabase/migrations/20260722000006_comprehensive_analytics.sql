@@ -69,8 +69,8 @@ begin
 
   select count(*) into v_newsletter_growth
   from public.newsletter_subscribers
-  where (p_start_date is null or created_at >= p_start_date)
-    and (p_end_date is null or created_at <= p_end_date);
+  where (p_start_date is null or subscribed_at >= p_start_date)
+    and (p_end_date is null or subscribed_at <= p_end_date);
 
   return jsonb_build_object(
     'overview', jsonb_build_object(

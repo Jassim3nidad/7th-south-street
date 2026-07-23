@@ -66,6 +66,7 @@ select extensions.pass('admin_adjust_inventory respects bounds and correctly log
 
 -- 3. Test order cancellation idempotency (double restocking prevention)
 set local role anon;
+select set_config('request.jwt.claims', '', true);
 do $$
 declare
   v_order_id bigint;
