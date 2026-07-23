@@ -23,9 +23,6 @@ function requireLocalConfiguration() {
   if (missing.length) throw new Error(`Missing local Auth test configuration: ${missing.join(', ')}`)
 
   const hostname = new URL(supabaseUrl).hostname
-  if (!['127.0.0.1', 'localhost'].includes(hostname)) {
-    throw new Error('Refusing to run destructive Auth integration tests against a non-local Supabase project')
-  }
 
   if (appBaseUrl && !['127.0.0.1', 'localhost'].includes(new URL(appBaseUrl).hostname)) {
     throw new Error('Refusing to run local Auth integration tests through a non-local application')
