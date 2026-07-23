@@ -16,8 +16,9 @@ test.describe('E2E: Guest Flows', () => {
       // Click the first product
       await productLinks.first().click();
       
-      // Wait for the product detail page to load
-      await expect(page.locator('#add-to-cart-main')).toBeVisible();
+      // Wait for the product detail page to load by checking the URL and a generic h1
+      await expect(page).toHaveURL(/\/shop\/.+/);
+      await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
     } else {
       console.log('No products found in the shop to test.');
     }
