@@ -1,4 +1,12 @@
-import Image from "next/image";
+import BounceCards from "@/components/ui/BounceCards";
+import { featuredProducts } from "@/lib/mock-store";
+
+const archiveImages = featuredProducts.map((product) => product.imageUrl);
+const archiveTransforms = [
+  "rotate(-7deg) translate(-105px)",
+  "rotate(2deg)",
+  "rotate(8deg) translate(105px)",
+];
 
 export default function BrandStory() {
   return (
@@ -19,9 +27,18 @@ export default function BrandStory() {
         </div>
 
         <div className="neo-story__visual neo-surface" aria-hidden="true">
-          <div className="neo-story__logo neo-inset">
-            <Image src="/logo.png" alt="" width={176} height={176} className="brand-logo" />
-          </div>
+          <BounceCards
+            className="neo-story__bounce-cards"
+            images={archiveImages}
+            containerWidth={520}
+            containerHeight={360}
+            animationDelay={0.25}
+            animationStagger={0.1}
+            easeType="elastic.out(1, 0.6)"
+            transformStyles={archiveTransforms}
+            enableHover
+          />
+          <p>Selected pieces · 2026</p>
         </div>
       </div>
     </section>
