@@ -7,8 +7,11 @@
     "build": "next build",
     "start": "next start",
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "test:auth:integration": "node --test scripts/test-auth-flows.mjs",
-    "test:hosted-concurrency": "node --env-file=.env.local scripts/test-hosted-concurrency.mjs",
+    "test:unit": "tsx --test \"src/tests/unit/**/*.test.ts\"",
+    "test:integration": "tsx --test \"src/tests/integration/**/*.test.{ts,mjs}\"",
+    "test:security": "tsx --test \"src/tests/security/**/*.test.{ts,mjs}\"",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:security && npm run test:e2e",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
@@ -29,6 +32,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20.14.0",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^18.3.3",
