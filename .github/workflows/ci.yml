@@ -138,6 +138,7 @@ jobs:
       - name: Run integration and security tests
         working-directory: frontend
         run: |
+          touch .env.local
           npm run test:integration
           npm run test:security
 
