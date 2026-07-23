@@ -168,8 +168,8 @@ begin
       from (
         select
           oi.product_name_snapshot as name,
-          oi.size,
-          oi.color,
+          oi.size_snapshot as size,
+          oi.color_snapshot as color,
           sum(oi.quantity) as sold
         from public.order_items oi
         join public.orders o on o.id = oi.order_id
@@ -177,7 +177,7 @@ begin
           and o.status not in ('cancelled', 'refunded')
           and (p_start_date is null or o.created_at >= p_start_date)
           and (p_end_date is null or o.created_at <= p_end_date)
-        group by oi.product_name_snapshot, oi.size, oi.color
+        group by oi.product_name_snapshot, oi.size_snapshot, oi.color_snapshot
         order by sold desc
         limit 5
       ) as top_variant

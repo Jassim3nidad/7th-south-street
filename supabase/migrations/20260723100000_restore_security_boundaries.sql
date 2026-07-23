@@ -77,3 +77,9 @@ $$;
 
 revoke all on function public.rsvp_event(bigint, text, text, text) from public;
 grant execute on function public.rsvp_event(bigint, text, text, text) to anon, authenticated, service_role;
+
+-- Grant permissions for missing tables
+grant select, insert, update, delete on public.carts to anon, authenticated, service_role;
+grant select, insert, update, delete on public.cart_items to anon, authenticated, service_role;
+grant select, insert, update, delete on public.order_status_history to anon, authenticated, service_role;
+grant select, insert, update, delete on public.payment_records to anon, authenticated, service_role;
