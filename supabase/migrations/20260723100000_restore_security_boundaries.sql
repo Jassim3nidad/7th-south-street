@@ -53,3 +53,27 @@ $$;
 
 revoke all on function public.check_rate_limit(text, text, integer, integer) from public;
 grant execute on function public.check_rate_limit(text, text, integer, integer) to anon, authenticated, service_role;
+
+-- Restore security definer boundary for rsvp_event
+drop function if exists private.rsvp_event_impl(bigint, text, text, text);
+alter function public.rsvp_event(bigint, text, text, text) set schema private;
+alter function private.rsvp_event(bigint, text, text, text) rename to rsvp_event_impl;
+revoke all on function private.rsvp_event_impl(bigint, text, text, text) from public;
+grant execute on function private.rsvp_event_impl(bigint, text, text, text) to anon, authenticated, service_role;
+
+create function public.rsvp_event(
+  p_event_id bigint,
+  p_name text,
+  p_email text,
+  p_phone text
+)
+returns jsonb
+language sql
+security invoker
+set search_path = pg_catalog, public
+as $$
+  select private.rsvp_event_impl(p_event_id, p_name, p_email, p_phone);
+$$;
+
+revoke all on function public.rsvp_event(bigint, text, text, text) from public;
+grant execute on function public.rsvp_event(bigint, text, text, text) to anon, authenticated, service_role;

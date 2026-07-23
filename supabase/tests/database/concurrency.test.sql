@@ -9,7 +9,7 @@ insert into public.user_roles (user_id, role)
 values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'admin');
 
 insert into public.products (id, name, slug, status)
-values (1, 'Concurrency Test Hat', 'concurrency-test-hat', 'available');
+values (999999, 'Concurrency Test Hat', 'concurrency-test-hat', 'available');
 
 -- 1. Test negative stock constraint
 do $$
