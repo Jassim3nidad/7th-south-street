@@ -594,7 +594,6 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
   isolation: isolate;
 }
 
-.neo-hero__cursor-grid { position: absolute; inset: 0; z-index: 2; }
 .neo-hero__art::before { position: absolute; inset: 2rem; z-index: -1; border: 1px solid rgba(110, 128, 159, 0.15); border-radius: 26px; content: ''; box-shadow: var(--neo-shadow-inset); }
 .neo-hero__watermark { position: absolute; top: 1.25rem; right: -0.8rem; color: var(--neo-watermark); font-family: var(--font-display); font-size: 12rem; font-weight: 600; letter-spacing: -0.08em; line-height: 1; }
 .neo-hero__medallion { display: grid; width: 12rem; height: 12rem; place-items: center; border-radius: 50%; }
