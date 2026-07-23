@@ -3,6 +3,14 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select extensions.plan(5);
 
+insert into auth.users (id, email, raw_user_meta_data)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'admin-test@example.com', '{"full_name":"Admin Test"}'::jsonb);
+insert into public.user_roles (user_id, role)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'admin');
+
+insert into public.products (id, name, slug, status)
+values (1, 'Concurrency Test Hat', 'concurrency-test-hat', 'available');
+
 -- 1. Test negative stock constraint
 do $$
 declare
@@ -28,6 +36,9 @@ declare
   v_stock_after integer;
   v_movements integer;
 begin
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claims', '{"sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}', true);
+
   select id, stock_quantity into v_variant_id, v_stock_before from public.product_variants limit 1;
   
   -- Attempt negative

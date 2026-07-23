@@ -30,6 +30,11 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_placeholder
       NEWSLETTER_RATE_LIMIT_SALT: ci-only-placeholder-not-used-at-runtime
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Secret Scanning
         uses: trufflesecurity/trufflehog@main
         with:
@@ -37,8 +42,6 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --debug --only-verified
-      - name: Check out repository
-        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
