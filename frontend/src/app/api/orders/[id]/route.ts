@@ -39,10 +39,20 @@ export async function PUT(request: Request, { params }: RouteContext) {
     const { supabase } = await requireAdmin()
     if (!/^\d+$/.test(id)) return failure('Order not found', 404)
     const body = await request.json()
+    
+    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
+    const validPaymentStatuses = ['unpaid', 'paid', 'refunded']
+    
+    const status = body.status || null
+    if (status && !validStatuses.includes(status)) return failure('Invalid order status', 400)
+    
+    const paymentStatus = body.payment_status || null
+    if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) return failure('Invalid payment status', 400)
+
     const { error } = await supabase.rpc('admin_update_order', {
       p_order_id: Number(id),
-      p_status: body.status || null,
-      p_payment_status: body.payment_status || null,
+      p_status: status,
+      p_payment_status: paymentStatus,
       p_payment_reference: body.payment_reference || null,
       p_notes: body.notes || null,
     })

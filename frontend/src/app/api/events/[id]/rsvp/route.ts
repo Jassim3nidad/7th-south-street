@@ -32,6 +32,22 @@ export async function POST(request: Request, { params }: RouteContext) {
     const body = await request.json()
     const supabase = await createClient()
 
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1'
+    const ipHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip))))
+      .map(b => b.toString(16).padStart(2, '0')).join('')
+
+    const { supabase: adminClient } = await requireAdmin()
+    const { data: isAllowed } = await adminClient.rpc('check_rate_limit', {
+      p_ip_hash: ipHash,
+      p_endpoint: 'rsvp_event',
+      p_limit: 3,
+      p_window_seconds: 60
+    })
+
+    if (isAllowed === false) {
+      return failure('Too many requests, please try again later', 429)
+    }
+
     const { data: event } = await supabase
       .from('events')
       .select('title, location_name, event_date, end_date')

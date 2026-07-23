@@ -1,5 +1,6 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -56,6 +57,25 @@ export async function getTrackedOrder(
     }
 
     const adminClient = createServiceClient()
+
+    // Rate Limiting for unauthenticated queries
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for') || '127.0.0.1'
+    const ipHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip))))
+      .map(b => b.toString(16).padStart(2, '0')).join('')
+
+    const { data: isAllowed } = await adminClient.rpc('check_rate_limit', {
+      p_ip_hash: ipHash,
+      p_endpoint: 'track_order',
+      p_limit: 10,
+      p_window_seconds: 60
+    })
+
+    if (isAllowed === false) {
+      console.warn(`Rate limit exceeded for track_order from IP hash ${ipHash}`)
+      return null
+    }
+
     let query = adminClient
       .from('orders')
       .select('*, order_items(*)')

@@ -820,6 +820,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_ip_hash: string
+          p_endpoint: string
+          p_limit: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
       admin_adjust_inventory: {
         Args: {
           p_reason?: string
