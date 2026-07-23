@@ -17,7 +17,7 @@ test.describe('E2E: Guest Flows', () => {
       await productLinks.first().click();
       
       // Wait for the product detail page to load
-      await expect(page.locator('button:has-text("Add to Bag")').or(page.locator('button:has-text("Out of Stock")'))).toBeVisible();
+      await expect(page.locator('button:has-text("Add to Cart")').or(page.locator('button:has-text("Out of Stock")'))).toBeVisible();
     } else {
       console.log('No products found in the shop to test.');
     }
