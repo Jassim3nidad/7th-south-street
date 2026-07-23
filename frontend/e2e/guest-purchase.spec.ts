@@ -6,7 +6,7 @@ test.describe('E2E: Guest Flows', () => {
     await page.goto('/shop');
     
     // Expect a title "Shop" or similar heading
-    await expect(page.locator('h1').filter({ hasText: /Shop/i })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: /The Archive|Shop/i })).toBeVisible();
 
     // The shop page may load products. Let's wait for a product link.
     // If no products exist in the seeded DB, this might fail, so we make it robust.
